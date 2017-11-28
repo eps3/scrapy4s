@@ -18,7 +18,7 @@ class Spider[T] {
   val logger = LoggerFactory.getLogger(this.getClass)
   private val startUrl = ListBuffer[Request]()
   private val pipelines = ListBuffer[Pipeline[T]]()
-  private var threadCount: Int = 10
+  private var threadCount: Int = Runtime.getRuntime.availableProcessors() * 2
   private var scheduler: Option[Scheduler] = None
   private var paser: Option[Response => T] = None
 

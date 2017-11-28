@@ -36,7 +36,7 @@ abstract class MultiThreadPipeline[T](threadCount: Int) extends Pipeline[T] {
 }
 
 object MultiThreadPipeline {
-  def apply[T](threadCount: Int)(p: (T, Response) => Unit): MultiThreadPipeline[T] = {
+  def apply[T](threadCount: Int = Runtime.getRuntime.availableProcessors() * 2)(p: (T, Response) => Unit): MultiThreadPipeline[T] = {
     new MultiThreadPipeline[T](threadCount) {
       override def execute(t: T, response: Response): Unit = p(t, response)
     }
