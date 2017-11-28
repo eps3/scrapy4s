@@ -82,7 +82,7 @@ class Spider[T] {
             * 执行数据操作
             */
           pipelines.foreach(p => {
-            p.pipe(model)
+            p.pipe(model, response)
           })
         } else {
           logger.debug(s"$request has bean spider !")

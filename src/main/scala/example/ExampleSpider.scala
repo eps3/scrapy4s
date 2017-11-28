@@ -1,7 +1,7 @@
 package example
 
 import http.Request
-import pipeline.LoggerPipeline
+import pipeline.{HtmlSavePipeline, LoggerPipeline}
 import spider.SimpleSpider
 
 object ExampleSpider {
@@ -13,6 +13,7 @@ object ExampleSpider {
           "https://segmentfault.com/q/1010000012185894"
         ).map(Request(_)))
       .withPipeline(LoggerPipeline[String]())
+      .withPipeline(HtmlSavePipeline[String]("/Users/admin/data/spider/"))
       .start()
   }
 }
