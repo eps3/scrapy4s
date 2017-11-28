@@ -1,5 +1,7 @@
 package example
 
+import java.io.File
+
 import http.Request
 import pipeline.{HtmlSavePipeline, LoggerPipeline}
 import spider.SimpleSpider
@@ -13,7 +15,11 @@ object ExampleSpider {
           "https://segmentfault.com/q/1010000012185894"
         ).map(Request(_)))
       .withPipeline(LoggerPipeline[String]())
-      .withPipeline(HtmlSavePipeline[String]("/Users/admin/data/spider/example/"))
+      .withPipeline(HtmlSavePipeline[String](saveFolder()))
       .start()
+  }
+
+  def saveFolder() ={
+    Seq(System.getProperty("user.home"), "data", "spider", "example").mkString(File.separator)
   }
 }

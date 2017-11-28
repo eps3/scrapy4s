@@ -83,24 +83,33 @@ class Spider[T] {
     logger.info("spider done !")
   }
 
+  /**
+    * 提交请求任务到线程池
+    * @param request 等待执行的请求
+    */
   def execute(request: Request): Unit ={
     threadPool.execute(() => {
-      /**
-        * 判断是否已经爬取过
-        */
-      if(scheduler.get.check(request)) {
-        logger.info(s"crawler -> $request")
-        val response = request.execute()
-        val model = paser.get(response)
-
+      try {
         /**
-          * 执行数据操作
+          * 判断是否已经爬取过
           */
-        pipelines.foreach(p => {
-          p.pipe(model, response)
-        })
-      } else {
-        logger.debug(s"$request has bean spider !")
+        if(scheduler.get.check(request)) {
+          logger.info(s"crawler -> ${request.method}: ${request.url}")
+          val response = request.execute()
+          val model = paser.get(response)
+
+          /**
+            * 执行数据操作
+            */
+          pipelines.foreach(p => {
+            p.pipe(model, response)
+          })
+        } else {
+          logger.debug(s"$request has bean spider !")
+        }
+      } catch {
+        case e: Exception =>
+          logger.error("spider error", e)
       }
     })
   }
