@@ -15,14 +15,13 @@ import scalaj.http.{Http, HttpResponse}
   * 爬虫核心类，用于组装爬虫
   * @tparam T 封装数据的bean
   */
-trait Spider[T] {
+class Spider[T] {
   val logger = LoggerFactory.getLogger(this.getClass)
   private val startUrl = ListBuffer[Request]()
   private val pipelines = ListBuffer[Pipeline[T]]()
   private var threadCount: Int = 10
   private var scheduler: Option[Scheduler] = None
-
-  def paser(response: HttpResponse[String]): T
+  private var paser: Option[HttpResponse[String] => T] = None
 
   lazy private val threadPool = new ThreadPoolExecutor(threadCount, threadCount,
     0L, TimeUnit.MILLISECONDS,
@@ -49,6 +48,11 @@ trait Spider[T] {
     this
   }
 
+  def withPaser(p: HttpResponse[String] => T) = {
+    this.paser = Some(p)
+    this
+  }
+
   def start(): Unit ={
     init()
     waitForShop()
@@ -61,6 +65,9 @@ trait Spider[T] {
     if (scheduler.isEmpty){
       scheduler = Some(new HashSetScheduler())
     }
+    if (paser.isEmpty) {
+      throw new IllegalArgumentException("paser cloud not be null")
+    }
     startUrl.foreach(request => {
       threadPool.execute(() => {
         /**
@@ -69,7 +76,7 @@ trait Spider[T] {
         if(scheduler.get.check(request)) {
           logger.info(s"crawler -> $request")
           val response: HttpResponse[String] = Http(request.url).method(request.method).asString
-          val model = paser(response)
+          val model = paser.get(response)
           pipelines.foreach(p => {
             p.pipe(model)
           })
@@ -87,4 +94,7 @@ trait Spider[T] {
     }
     logger.debug("spider done !")
   }
+}
+object Spider{
+  def apply[T](p: HttpResponse[String] => T): Spider[T] = new Spider[T]().withPaser(p)
 }
