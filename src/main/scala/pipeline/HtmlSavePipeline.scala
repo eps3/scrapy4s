@@ -20,6 +20,7 @@ abstract class HtmlSavePipeline[T](fileDir: String) extends SingleThreadPipeline
     val writer = new FileWriter(file)
     writer.write(response.body)
     writer.close()
+    logger.info(s"save to -> ${file.getAbsolutePath} ")
   }
 }
 

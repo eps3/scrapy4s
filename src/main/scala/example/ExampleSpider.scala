@@ -13,7 +13,7 @@ object ExampleSpider {
           "https://segmentfault.com/q/1010000012185894"
         ).map(Request(_)))
       .withPipeline(LoggerPipeline[String]())
-      .withPipeline(HtmlSavePipeline[String]("/Users/admin/data/spider/"))
+      .withPipeline(HtmlSavePipeline[String]("/Users/admin/data/spider/example/"))
       .start()
   }
 }

@@ -3,7 +3,7 @@ package spider
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
 
-import http.Request
+import http.{Request, UAHttp}
 import org.slf4j.LoggerFactory
 import pipeline.Pipeline
 import scheduler.{HashSetScheduler, Scheduler}
@@ -75,7 +75,7 @@ class Spider[T] {
           */
         if(scheduler.get.check(request)) {
           logger.info(s"crawler -> $request")
-          val response: HttpResponse[String] = Http(request.url).method(request.method).asString
+          val response: HttpResponse[String] = UAHttp(request.url).method(request.method).asString
           val model = paser.get(response)
 
           /**
