@@ -5,4 +5,6 @@ package pipeline
   */
 trait Pipeline[T] {
   def pipe(t: T)
+
+  def close()
 }

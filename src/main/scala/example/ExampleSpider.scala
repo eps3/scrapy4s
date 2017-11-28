@@ -12,7 +12,7 @@ object ExampleSpider {
           "https://segmentfault.com",
           "https://segmentfault.com/q/1010000012185894"
         ).map(Request(_)))
-      .withPipeline(new LoggerPipeline[String])
+      .withPipeline(LoggerPipeline[String]())
       .start()
   }
 }

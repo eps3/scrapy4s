@@ -77,6 +77,10 @@ class Spider[T] {
           logger.info(s"crawler -> $request")
           val response: HttpResponse[String] = Http(request.url).method(request.method).asString
           val model = paser.get(response)
+
+          /**
+            * 执行数据操作
+            */
           pipelines.foreach(p => {
             p.pipe(model)
           })
@@ -89,10 +93,13 @@ class Spider[T] {
 
   def waitForShop() = {
     threadPool.shutdown()
-    while (threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
+    while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
       logger.debug("wait for spider done ...")
     }
-    logger.debug("spider done !")
+    pipelines.foreach(p => {
+      p.close()
+    })
+    logger.info("spider done !")
   }
 }
 object Spider{
