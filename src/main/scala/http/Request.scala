@@ -21,4 +21,8 @@ case class Request(
         false
     }
   }
+
+  def execute() ={
+    Response(this, UAHttp(this.url).method(this.method).asString)
+  }
 }

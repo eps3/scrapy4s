@@ -3,9 +3,9 @@ package pipeline
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
 
+import http.Response
 import org.slf4j.LoggerFactory
 
-import scalaj.http.HttpResponse
 
 /**
   * Created by sheep3 on 2017/11/28.
@@ -17,14 +17,14 @@ abstract class MultiThreadPipeline[T](threadCount: Int) extends Pipeline[T] {
     new LinkedBlockingQueue[Runnable](),
     new CallerRunsPolicy())
 
-  override def pipe(t: T, response: HttpResponse[String]): Unit = {
+  override def pipe(t: T, response: Response): Unit = {
     threadPool.execute(() => {
       logger.debug(s"pipe -> exec $t")
       execute(t, response)
     })
   }
 
-  def execute(t: T, response: HttpResponse[String]): Unit
+  def execute(t: T, response: Response): Unit
 
   override def close(): Unit = {
     threadPool.shutdown()
@@ -36,9 +36,9 @@ abstract class MultiThreadPipeline[T](threadCount: Int) extends Pipeline[T] {
 }
 
 object MultiThreadPipeline {
-  def apply[T](threadCount: Int)(p: (T, HttpResponse[String]) => Unit): MultiThreadPipeline[T] = {
+  def apply[T](threadCount: Int)(p: (T, Response) => Unit): MultiThreadPipeline[T] = {
     new MultiThreadPipeline[T](threadCount) {
-      override def execute(t: T, response: HttpResponse[String]): Unit = p(t, response)
+      override def execute(t: T, response: Response): Unit = p(t, response)
     }
   }
 }

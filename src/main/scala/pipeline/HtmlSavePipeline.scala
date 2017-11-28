@@ -4,7 +4,7 @@ import java.io.{File, FileWriter}
 import java.nio.file.Paths
 import java.security.MessageDigest
 
-import scalaj.http.HttpResponse
+import http.Response
 
 /**
   * Created by sheep3 on 2017/11/28.
@@ -13,21 +13,21 @@ abstract class HtmlSavePipeline[T](fileDir: String) extends SingleThreadPipeline
 
 //  val dir = new File(fileDir).getCanonicalPath
 
-  def fileName(t: T, response: HttpResponse[String]): String
+  def fileName(t: T, response: Response): String
 
-  override def execute(t: T, response: HttpResponse[String]): Unit = {
+  override def execute(t: T, response: Response): Unit = {
     val file = new File(fileDir , fileName(t, response))
     val writer = new FileWriter(file)
-    writer.write(response.body)
+    writer.write(response.response.body)
     writer.close()
     logger.info(s"save to -> ${file.getAbsolutePath} ")
   }
 }
 
 object HtmlSavePipeline {
-  def apply[T](fileDir: String)(implicit p: (T, HttpResponse[String]) => String = (_: T, r: HttpResponse[String]) => getHash(r.body)): HtmlSavePipeline[T] = {
+  def apply[T](fileDir: String)(implicit p: (T, Response) => String = (_: T, r: Response) => getHash(r.response.body)): HtmlSavePipeline[T] = {
     new HtmlSavePipeline[T](fileDir) {
-      override def fileName(t: T, response: HttpResponse[String]) = {
+      override def fileName(t: T, response: Response) = {
         p(t, response)
       }
     }

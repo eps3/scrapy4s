@@ -1,15 +1,15 @@
 package pipeline
 
+import http.Response
 import org.slf4j.LoggerFactory
 
-import scalaj.http.HttpResponse
 
 /**
   * 基于日志打印的Pipe
   */
 class LoggerPipeline[T] extends SingleThreadPipeline[T] {
   override val logger = LoggerFactory.getLogger(classOf[LoggerPipeline[T]])
-  override def execute(t: T, response: HttpResponse[String]): Unit = {
+  override def execute(t: T, response: Response): Unit = {
     logger.info(s"get new data => $t")
   }
 }

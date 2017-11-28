@@ -3,13 +3,12 @@ package spider
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
 
-import http.{Request, UAHttp}
+import http.{Request, Response, UAHttp}
 import org.slf4j.LoggerFactory
 import pipeline.Pipeline
 import scheduler.{HashSetScheduler, Scheduler}
 
 import scala.collection.mutable.ListBuffer
-import scalaj.http.{Http, HttpResponse}
 
 /**
   * 爬虫核心类，用于组装爬虫
@@ -21,7 +20,7 @@ class Spider[T] {
   private val pipelines = ListBuffer[Pipeline[T]]()
   private var threadCount: Int = 10
   private var scheduler: Option[Scheduler] = None
-  private var paser: Option[HttpResponse[String] => T] = None
+  private var paser: Option[Response => T] = None
 
   lazy private val threadPool = new ThreadPoolExecutor(threadCount, threadCount,
     0L, TimeUnit.MILLISECONDS,
@@ -48,20 +47,20 @@ class Spider[T] {
     this
   }
 
-  def withPaser(p: HttpResponse[String] => T) = {
+  def withPaser(p: Response => T) = {
     this.paser = Some(p)
     this
   }
 
   def start(): Unit ={
-    init()
+    run()
     waitForShop()
   }
 
   /**
     * 初始化爬虫设置，并将初始url倒入任务池中
     */
-  def init(): Unit ={
+  def run(): Unit ={
     if (scheduler.isEmpty){
       scheduler = Some(new HashSetScheduler())
     }
@@ -69,25 +68,7 @@ class Spider[T] {
       throw new IllegalArgumentException("paser cloud not be null")
     }
     startUrl.foreach(request => {
-      threadPool.execute(() => {
-        /**
-          * 判断是否已经爬取过
-          */
-        if(scheduler.get.check(request)) {
-          logger.info(s"crawler -> $request")
-          val response: HttpResponse[String] = UAHttp(request.url).method(request.method).asString
-          val model = paser.get(response)
-
-          /**
-            * 执行数据操作
-            */
-          pipelines.foreach(p => {
-            p.pipe(model, response)
-          })
-        } else {
-          logger.debug(s"$request has bean spider !")
-        }
-      })
+      execute(request)
     })
   }
 
@@ -101,7 +82,29 @@ class Spider[T] {
     })
     logger.info("spider done !")
   }
+
+  def execute(request: Request): Unit ={
+    threadPool.execute(() => {
+      /**
+        * 判断是否已经爬取过
+        */
+      if(scheduler.get.check(request)) {
+        logger.info(s"crawler -> $request")
+        val response = request.execute()
+        val model = paser.get(response)
+
+        /**
+          * 执行数据操作
+          */
+        pipelines.foreach(p => {
+          p.pipe(model, response)
+        })
+      } else {
+        logger.debug(s"$request has bean spider !")
+      }
+    })
+  }
 }
 object Spider{
-  def apply[T](p: HttpResponse[String] => T): Spider[T] = new Spider[T]().withPaser(p)
+  def apply[T](p: Response => T): Spider[T] = new Spider[T]().withPaser(p)
 }
