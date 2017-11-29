@@ -1,10 +1,9 @@
 package example
 
-import java.io.File
-
 import http.Request
-import pipeline.{HtmlSavePipeline, LoggerPipeline}
+import pipeline.HtmlSavePipeline
 import spider.SimpleSpider
+import util.FileUtil
 
 object ExampleSpider {
   def main(args: Array[String]): Unit = {
@@ -14,11 +13,8 @@ object ExampleSpider {
           "https://segmentfault.com",
           "https://segmentfault.com/q/1010000012185894"
         ).map(Request(_)))
-      .withPipeline(HtmlSavePipeline[String](saveFolder()))
+      .withPipeline(HtmlSavePipeline[String](FileUtil.pathWithHome(Seq("data", "spider", "example"))))
       .start()
   }
 
-  def saveFolder() ={
-    Seq(System.getProperty("user.home"), "data", "spider", "example").mkString(File.separator)
-  }
 }
