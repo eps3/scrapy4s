@@ -2,3 +2,4 @@
 target
 *.log
 *.javac
+src/main/scala/work
