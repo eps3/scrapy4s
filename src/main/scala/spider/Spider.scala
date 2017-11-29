@@ -1,22 +1,22 @@
 package spider
 
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
-import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
+import java.util.concurrent.{Future, LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
 
-import http.{Request, Response, UAHttp}
+import http.{Request, RequestConfig, Response}
 import org.slf4j.LoggerFactory
 import pipeline.Pipeline
 import scheduler.{HashSetScheduler, Scheduler}
 
-import scala.collection.mutable.ListBuffer
 
 /**
   * 爬虫核心类，用于组装爬虫
   * @tparam T 封装数据的bean
   */
-class Spider[T](
+case class Spider[T](
                  paser: Response => T,
                  threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
+                 requestConfig: RequestConfig = RequestConfig.default,
                  startUrl: Seq[Request] = Seq.empty[Request],
                  pipelines: Seq[Pipeline[T]] = Seq.empty[Pipeline[T]],
                  scheduler: Scheduler = new HashSetScheduler()
@@ -107,33 +107,28 @@ class Spider[T](
     * 提交请求任务到线程池
     * @param request 等待执行的请求
     */
-  def execute(request: Request): Unit ={
+  def execute(request: Request): Unit = {
     threadPool.execute(() => {
-      try {
-        /**
-          * 判断是否已经爬取过
-          */
-        if(scheduler.check(request)) {
-          logger.info(s"crawler -> ${request.method}: ${request.url}")
-          val response = request.execute()
-          val model = paser(response)
+      /**
+        * 判断是否已经爬取过
+        */
+      if(scheduler.check(request)) {
+        logger.info(s"crawler -> ${request.method}: ${request.url}")
+        val response = request.execute(this)
+        val model = paser(response)
 
-          /**
-            * 执行数据操作
-            */
-          pipelines.foreach(p => {
-            p.pipe(model, response)
-          })
-        } else {
-          logger.debug(s"$request has bean spider !")
-        }
-      } catch {
-        case e: Exception =>
-          logger.error("spider error", e)
+        /**
+          * 执行数据操作
+          */
+        pipelines.foreach(p => {
+          p.pipe(model, response)
+        })
+      } else {
+        logger.debug(s"$request has bean spider !")
       }
     })
   }
 }
 object Spider{
-  def apply[T](p: Response => T): Spider[T] = new Spider[T](p).withPaser(p)
+  def apply[T](p: Response => T): Spider[T] = new Spider[T](p)
 }

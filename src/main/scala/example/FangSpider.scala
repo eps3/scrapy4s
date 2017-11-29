@@ -2,7 +2,7 @@ package example
 
 import java.io.File
 
-import http.{Request, Response}
+import http.Request
 import org.slf4j.LoggerFactory
 import pipeline.{HtmlSavePipeline, LineFilePipeline, SingleThreadPipeline}
 import spider.{SimpleSpider, Spider}
@@ -18,17 +18,19 @@ object FangSpider {
     /**
       * 详情页爬虫
       */
-    val houseDetailSpider = SimpleSpider().withPipeline(
+    val houseDetailSpider = new Spider[Detail](r => {
+      val price = r.regex("""id="diyprice">(\d+)<""".r).headOption.getOrElse(Seq("")).head
+      val name = r.regex("""var content= '(.*?)';""".r).headOption.getOrElse(Seq("")).head
+      Detail(name, price)
+    }).withPipeline(
       // 保存整个html
-      HtmlSavePipeline[String](saveFolder("detail"))((t, r) => {
+      HtmlSavePipeline[Detail](saveFolder("detail"))((t, r) => {
         val urlSplit = r.request.url.split("/")
         urlSplit(urlSplit.length - 1)
       })).withPipeline(
       // 保存行数据
       LineFilePipeline(saveFolder("detail.txt"))((t, r) => {
-        val price = r.regex("""id="diyprice">(\d+)<""".r).headOption.getOrElse(Seq("")).head
-        val name = r.regex("""var content= '(.*?)';""".r).headOption.getOrElse(Seq("")).head
-        s"${r.request.url}\t$name\t$price"
+        s"${r.request.url}\t${t.line}"
       }))
 
     /**
@@ -47,8 +49,8 @@ object FangSpider {
       }))
       // 添加启动url
       .withStartUrl({
-        (1 to 51).map("http://shop.fang.com/zu/house/i3%d/".format(_)).map(Request(_))
-      })
+      (1 to 51).map("http://shop.fang.com/zu/house/i3%d/".format(_)).map(Request(_))
+    })
 
     houseDetailSpider.run()
     houseListSpider.start()
@@ -66,4 +68,8 @@ object FangSpider {
   def saveFolder(subFolder: String) = {
     Seq(System.getProperty("user.home"), "data", "spider", "fang", subFolder).mkString(File.separator)
   }
+}
+
+case class Detail(name: String, price: String) {
+  def line = s"$name\t$price"
 }

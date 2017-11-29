@@ -1,25 +1,31 @@
 package pipeline
+
 import java.io.FileWriter
 
 import http.Response
 
 class LineFilePipeline[T](
                            filePath: String,
-                           linePaser: (T, Response) => String = (t: T,_: Response) => s"$t"
-                         ) extends SingleThreadPipeline[T] {
+                           threadCount: Int = 1,
+                           linePaser: (T, Response) => String = (t: T, _: Response) => s"$t"
+                         ) extends MultiThreadPipeline[T](threadCount) {
 
   val writer = new FileWriter(filePath)
 
   override def execute(t: T, response: Response): Unit = {
-    writer.write(s"${linePaser(t, response)}\n")
+    val line = linePaser(t, response)
+    this.synchronized {
+      writer.write(s"$line\n")
+    }
   }
 
   override def shutdownHook(): Unit = {
     writer.close()
   }
 }
+
 object LineFilePipeline {
-  def apply[T](filePath: String)(implicit linePaser: (T, Response) => String = (t: T,_: Response) => s"$t"): LineFilePipeline[T] = {
-    new LineFilePipeline[T](filePath, linePaser)
+  def apply[T](filePath: String, threadCount: Int = 1)(implicit linePaser: (T, Response) => String = (t: T, _: Response) => s"$t"): LineFilePipeline[T] = {
+    new LineFilePipeline[T](filePath, threadCount = threadCount, linePaser = linePaser)
   }
 }

@@ -1,7 +1,6 @@
 package pipeline
 
 import java.io.{File, FileWriter}
-import java.nio.file.Paths
 import java.security.MessageDigest
 
 import http.Response
