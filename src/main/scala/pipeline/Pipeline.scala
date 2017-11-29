@@ -2,7 +2,6 @@ package pipeline
 
 import http.Response
 
-import scalaj.http.HttpResponse
 
 /**
   * 数据管道

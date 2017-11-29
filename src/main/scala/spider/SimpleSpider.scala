@@ -7,5 +7,5 @@ class SimpleSpider(linePaser: Response => String) extends Spider[String](linePas
 }
 
 object SimpleSpider {
-  def apply(linePaser: Response => String = r => r.response.body): SimpleSpider = new SimpleSpider(linePaser)
+  def apply(linePaser: Response => String = r => r.body): SimpleSpider = new SimpleSpider(linePaser)
 }

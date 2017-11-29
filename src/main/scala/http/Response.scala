@@ -1,19 +1,27 @@
 package http
 
+import java.io.InputStream
+
 import extractor.Extractor
+import org.asynchttpclient
 
 import scala.util.matching.Regex
-import scalaj.http.HttpResponse
 
 /**
   * Created by sheep3 on 2017/11/28.
   */
-case class Response(request: Request, response: HttpResponse[String]) {
-  def regex(r: Regex) ={
-    Extractor.regex(r: Regex,response.body)
+case class Response(
+                     request: Request,
+                     _response: asynchttpclient.Response
+                   ) {
+  def body: String = _response.getResponseBody
+  def inputStream: InputStream = _response.getResponseBodyAsStream
+
+  def regex(r: Regex) = {
+    Extractor.regex(r: Regex, body)
   }
 
-  def regex(r: String) ={
-    Extractor.regex(r.r: Regex,response.body)
+  def regex(r: String) = {
+    Extractor.regex(r.r: Regex, body)
   }
 }

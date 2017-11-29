@@ -17,7 +17,7 @@ abstract class HtmlSavePipeline[T](fileDir: String) extends SingleThreadPipeline
   override def execute(t: T, response: Response): Unit = {
     val file = new File(fileDir , fileName(t, response))
     val writer = new FileWriter(file)
-    writer.write(response.response.body)
+    writer.write(response.body)
     writer.close()
     logger.info(s"save to -> ${file.getAbsolutePath} ")
   }

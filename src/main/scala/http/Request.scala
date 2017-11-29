@@ -1,6 +1,11 @@
 package http
 
+import java.util.concurrent.Future
+
+import org.asynchttpclient
 import spider.Spider
+import org.asynchttpclient.Dsl.{asyncHttpClient, _}
+import util.HttpUtil
 
 case class Request(
                     url: String,
@@ -33,8 +38,12 @@ case class Request(
   def execute(config: RequestConfig = RequestConfig.default): Response = {
     var error_count = 0
     while (error_count <= config.tryCount) {
+      val client = asyncHttpClient()
       try {
-        val _res = Response(this, UAHttp(this.url).method(this.method).asString)
+        val response: asynchttpclient.Response = client.prepareRequest(
+          get(this.url).setHeader("User-Agent",HttpUtil.randomUserAgent).build()
+        ).execute().get()
+        val _res = Response(this, response)
         if (config.test_func(_res)) {
           return _res
         } else {
@@ -46,6 +55,8 @@ case class Request(
           if (error_count > config.tryCount) {
             throw new Exception(s"try count is max -> ${config.tryCount}", e)
           }
+      } finally {
+        client.close()
       }
     }
     throw new Exception("unknown exception")
