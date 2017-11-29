@@ -12,4 +12,8 @@ case class Response(request: Request, response: HttpResponse[String]) {
   def regex(r: Regex) ={
     Extractor.regex(r: Regex,response.body)
   }
+
+  def regex(r: String) ={
+    Extractor.regex(r.r: Regex,response.body)
+  }
 }

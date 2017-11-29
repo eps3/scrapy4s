@@ -19,9 +19,15 @@ object FangSpider {
       * 详情页爬虫
       */
     val houseDetailSpider = new Spider[Detail](r => {
-      val price = r.regex("""id="diyprice">(\d+)<""".r).headOption.getOrElse(Seq("")).head
+      val price: String = if (r.request.url.startsWith("http://shop.fang.com/zu/3_")) {
+        r.regex("""id="diyprice">(\d+)<""".r).headOption.getOrElse(Seq("")).head
+      } else {
+        r.regex("""class="red20b">(\d+)<""".r).headOption.getOrElse(Seq("")).head
+      }
       val name = r.regex("""var content= '(.*?)';""".r).headOption.getOrElse(Seq("")).head
-      Detail(name, price)
+      val map = r.regex("""id="iframeBaiduMap.*?src="(.*?)">""".r).head.head
+      val px_py = Request(map).execute().regex("""px:"(.*?)",py:"(.*?)"""".r).head
+      Detail(name, price, px_py(0),px_py(1))
     }).withPipeline(
       // 保存整个html
       HtmlSavePipeline[Detail](saveFolder("detail"))((t, r) => {
@@ -49,7 +55,7 @@ object FangSpider {
       }))
       // 添加启动url
       .withStartUrl({
-      (1 to 51).map("http://shop.fang.com/zu/house/i3%d/".format(_)).map(Request(_))
+      (1 to 1).map("http://shop.fang.com/zu/house/i3%d/".format(_)).map(Request(_))
     })
 
     houseDetailSpider.run()
@@ -70,6 +76,6 @@ object FangSpider {
   }
 }
 
-case class Detail(name: String, price: String) {
-  def line = s"$name\t$price"
+case class Detail(name: String, price: String, px: String, py: String) {
+  def line = s"$name\t$price\t$px\t$py"
 }
