@@ -4,7 +4,7 @@ import java.io.File
 
 import http.{Request, Response}
 import org.slf4j.LoggerFactory
-import pipeline.HtmlSavePipeline
+import pipeline.{HtmlSavePipeline, LineFilePipeline}
 import spider.Spider
 
 
@@ -18,11 +18,13 @@ object FangSpider {
       * 详情页爬虫
       */
     val houseDetailSpider = Spider[String](res => {
-      res.response.statusLine
+      val price = res.regex("""id="diyprice">(\d+)<""".r).headOption.getOrElse(Seq("")).head
+      val name = res.regex("""var content= '(.*?)';""".r).headOption.getOrElse(Seq("")).head
+      s"${res.request.url}\t$name\t$price"
     }).withPipeline(HtmlSavePipeline[String](saveFolder("detail"))((t, r) => {
       val urlSplit = r.request.url.split("/")
       urlSplit(urlSplit.length-1)
-    }))
+    })).withPipeline(LineFilePipeline(saveFolder("detail.txt")))
 
     /**
       * 列表爬虫
@@ -49,7 +51,7 @@ object FangSpider {
   /**
     * 包容平台的路径拼接
     *   在linux中-> ~/data/spider/fang/subFolder
-    *   在windows中 -> C:\Users\user_name\data\spider\fang\subFolder
+    *   在windows中 -> C:\\Users\\user_name\\data\\spider\\fang\\subFolder
     * @param subFolder 子路径
     * @return
     */

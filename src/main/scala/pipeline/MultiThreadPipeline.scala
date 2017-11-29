@@ -31,7 +31,14 @@ abstract class MultiThreadPipeline[T](threadCount: Int) extends Pipeline[T] {
     while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
       logger.debug("wait for spider done ...")
     }
+    shutdownHook()
     logger.debug("spider done !")
+  }
+
+  /**
+    * 给子类用于资源收尾
+    */
+  def shutdownHook() = {
   }
 }
 
