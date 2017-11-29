@@ -19,7 +19,7 @@ class LineFilePipeline[T](
   }
 }
 object LineFilePipeline {
-  def apply[T](filePath: String, linePaser: (T, Response) => String = (t: T,_: Response) => s"$t"): LineFilePipeline[T] = {
+  def apply[T](filePath: String)(implicit linePaser: (T, Response) => String = (t: T,_: Response) => s"$t"): LineFilePipeline[T] = {
     new LineFilePipeline[T](filePath, linePaser)
   }
 }
