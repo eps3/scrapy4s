@@ -28,6 +28,17 @@ case class Spider[T](
     new LinkedBlockingQueue[Runnable](),
     new CallerRunsPolicy())
 
+  def withTestFunc(test_func: Response => Boolean) = {
+    new Spider[T](
+      paser = paser,
+      threadCount = threadCount,
+      requestConfig = requestConfig.withTestFunc(test_func),
+      startUrl = startUrl,
+      pipelines = pipelines,
+      scheduler = scheduler
+    )
+  }
+
   def withStartUrl(urls: Seq[Request]) = {
     new Spider[T](
       paser = paser,
