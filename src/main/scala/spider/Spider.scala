@@ -14,13 +14,14 @@ import scala.collection.mutable.ListBuffer
   * 爬虫核心类，用于组装爬虫
   * @tparam T 封装数据的bean
   */
-class Spider[T] {
+class Spider[T](
+                 paser: Response => T,
+                 threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
+                 startUrl: Seq[Request] = Seq.empty[Request],
+                 pipelines: Seq[Pipeline[T]] = Seq.empty[Pipeline[T]],
+                 scheduler: Scheduler = new HashSetScheduler()
+               ) {
   val logger = LoggerFactory.getLogger(this.getClass)
-  private val startUrl = ListBuffer[Request]()
-  private val pipelines = ListBuffer[Pipeline[T]]()
-  private var threadCount: Int = Runtime.getRuntime.availableProcessors() * 2
-  private var scheduler: Option[Scheduler] = None
-  private var paser: Option[Response => T] = None
 
   lazy private val threadPool = new ThreadPoolExecutor(threadCount, threadCount,
     0L, TimeUnit.MILLISECONDS,
@@ -28,28 +29,53 @@ class Spider[T] {
     new CallerRunsPolicy())
 
   def withStartUrl(urls: Seq[Request]) = {
-    startUrl.appendAll(urls)
-    this
+    new Spider[T](
+      paser = paser,
+      threadCount = threadCount,
+      startUrl = startUrl ++ urls,
+      pipelines = pipelines,
+      scheduler = scheduler
+    )
   }
 
   def withThreadCount(count: Int) = {
-    threadCount = count
-    this
+    new Spider[T](
+      paser = paser,
+      threadCount = count,
+      startUrl = startUrl,
+      pipelines = pipelines,
+      scheduler = scheduler
+    )
   }
 
   def withPipeline(pipeline: Pipeline[T]) = {
-    pipelines.append(pipeline)
-    this
+    new Spider[T](
+      paser = paser,
+      threadCount = threadCount,
+      startUrl = startUrl,
+      pipelines = pipelines :+ pipeline,
+      scheduler = scheduler
+    )
   }
 
-  def withScheduler(scheduler: Scheduler) = {
-    this.scheduler = Some(scheduler)
-    this
+  def withScheduler(s: Scheduler) = {
+    new Spider[T](
+      paser = paser,
+      threadCount = threadCount,
+      startUrl = startUrl,
+      pipelines = pipelines,
+      scheduler = s
+    )
   }
 
   def withPaser(p: Response => T) = {
-    this.paser = Some(p)
-    this
+    new Spider[T](
+      paser = p,
+      threadCount = threadCount,
+      startUrl = startUrl,
+      pipelines = pipelines,
+      scheduler = scheduler
+    )
   }
 
   def start(): Unit ={
@@ -61,12 +87,6 @@ class Spider[T] {
     * 初始化爬虫设置，并将初始url倒入任务池中
     */
   def run(): Unit ={
-    if (scheduler.isEmpty){
-      scheduler = Some(new HashSetScheduler())
-    }
-    if (paser.isEmpty) {
-      throw new IllegalArgumentException("paser cloud not be null")
-    }
     startUrl.foreach(request => {
       execute(request)
     })
@@ -93,10 +113,10 @@ class Spider[T] {
         /**
           * 判断是否已经爬取过
           */
-        if(scheduler.get.check(request)) {
+        if(scheduler.check(request)) {
           logger.info(s"crawler -> ${request.method}: ${request.url}")
           val response = request.execute()
-          val model = paser.get(response)
+          val model = paser(response)
 
           /**
             * 执行数据操作
@@ -115,5 +135,5 @@ class Spider[T] {
   }
 }
 object Spider{
-  def apply[T](p: Response => T): Spider[T] = new Spider[T]().withPaser(p)
+  def apply[T](p: Response => T): Spider[T] = new Spider[T](p).withPaser(p)
 }

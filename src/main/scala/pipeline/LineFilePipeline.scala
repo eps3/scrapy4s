@@ -3,12 +3,15 @@ import java.io.FileWriter
 
 import http.Response
 
-class LineFilePipeline[T](filePath: String) extends SingleThreadPipeline[T] {
+class LineFilePipeline[T](
+                           filePath: String,
+                           linePaser: (T, Response) => String = (t: T,_: Response) => s"$t"
+                         ) extends SingleThreadPipeline[T] {
 
   val writer = new FileWriter(filePath)
 
   override def execute(t: T, response: Response): Unit = {
-    writer.write(s"$t\n")
+    writer.write(s"${linePaser(t, response)}\n")
   }
 
   override def shutdownHook(): Unit = {
@@ -16,5 +19,7 @@ class LineFilePipeline[T](filePath: String) extends SingleThreadPipeline[T] {
   }
 }
 object LineFilePipeline {
-  def apply[T](filePath: String): LineFilePipeline[T] = new LineFilePipeline[T](filePath)
+  def apply[T](filePath: String, linePaser: (T, Response) => String = (t: T,_: Response) => s"$t"): LineFilePipeline[T] = {
+    new LineFilePipeline[T](filePath, linePaser)
+  }
 }

@@ -14,7 +14,6 @@ object ExampleSpider {
           "https://segmentfault.com",
           "https://segmentfault.com/q/1010000012185894"
         ).map(Request(_)))
-      .withPipeline(LoggerPipeline[String]())
       .withPipeline(HtmlSavePipeline[String](saveFolder()))
       .start()
   }
