@@ -25,7 +25,7 @@ abstract class HtmlSavePipeline[T](fileDir: String) extends SingleThreadPipeline
 }
 
 object HtmlSavePipeline {
-  def apply[T](fileDir: String)(implicit p: (T, Response) => String = (_: T, r: Response) => getHash(r.response.body)): HtmlSavePipeline[T] = {
+  def apply[T](fileDir: String)(implicit p: (T, Response) => String = (_: T, r: Response) => getHash(r.request.toString)): HtmlSavePipeline[T] = {
     new HtmlSavePipeline[T](fileDir) {
       override def fileName(t: T, response: Response) = {
         p(t, response)
