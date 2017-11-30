@@ -101,7 +101,7 @@ case class Spider[T](
     )
   }
 
-  def start(): Unit ={
+  def start() ={
     run()
     waitForShop()
   }
@@ -109,10 +109,11 @@ case class Spider[T](
   /**
     * 初始化爬虫设置，并将初始url倒入任务池中
     */
-  def run(): Unit ={
+  def run() ={
     startUrl.foreach(request => {
       execute(request)
     })
+    this
   }
 
   def waitForShop() = {
@@ -130,7 +131,7 @@ case class Spider[T](
     * 提交请求任务到线程池
     * @param request 等待执行的请求
     */
-  def execute(request: Request): Unit = {
+  def execute(request: Request) = {
     threadPool.execute(() => {
       try {
         /**
@@ -160,6 +161,7 @@ case class Spider[T](
           logger.error(s"request: ${request.url} error", e)
       }
     })
+    this
   }
 }
 object Spider{
