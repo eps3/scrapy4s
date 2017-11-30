@@ -25,23 +25,50 @@ object ExampleSpider {
           "https://segmentfault.com",
           "https://segmentfault.com/q/1010000012185894"
         ).map(Request(_)))
-      .withPipeline(HtmlSavePipeline[String](FileUtil.pathWithHome(Seq("data", "spider", "example"))))
+      .withPipeline(HtmlSavePipeline[String]("~/data/"))
       .start()
   }
 }
 ```
 
+
+
 #### 3 pipeline 
 
 > 是爬虫数据处理核心，对于多个pipeline，每个请求的数据都会在每个pipeline里执行
 
-##### 2.1.1 LineFilePipeline
+##### 2.1.1 LineFilePipeline 行数据Pipeline
+
+```scala
+// 第一个参数是目标文件
+// 第二个参数是需要存的行数据解析函数
+val lineFilePipeline = LineFilePipeline("~/data/line.txt")((body: String, response: Response) => {
+  s"${response.url} ${response.statusCode}"
+})
+```
 
 
 
+##### 2.1.2 FileDumpPipeline 文件下载Pipeline
+
+```scala
+// 第一个参数是存放的文件夹
+// 第二个参数是文件名生成函数
+val fileDumpPipeline = FileDumpPipeline[String]("~/data/")((body: String, r: Response) => {
+  val splitArr = r.request.url.split("/")
+  splitArr(splitArr.length - 1)
+})
+```
 
 
- 
+
+##### 2.1.3 Other Pileline
+
+- LoggerPipeline 打印日志的Pipeline
+- MultiThreadPipeline 多线程Pipeline
+- SingleThreadPipeline 单线程Pipeline
+
+
 
 #### Update Log
 
@@ -55,5 +82,6 @@ object ExampleSpider {
 
 - v1: 完成基于传统Java并发API版本的Scrapy
   - 完善Request的封装
+  - 添加代理支持
 - v2: 添加异步io以及Akka调度机制
 - v3: 添加web监控管理器

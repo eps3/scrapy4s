@@ -15,7 +15,10 @@ case class Response(
                      _response: asynchttpclient.Response
                    ) {
   def body: String = _response.getResponseBody
+
   def inputStream: InputStream = _response.getResponseBodyAsStream
+
+  def statusCode: Int = _response.getStatusCode
 
   def regex(r: Regex) = {
     Extractor.regex(r: Regex, body)
