@@ -12,7 +12,7 @@ object ImageDownloadSpider {
   def main(args: Array[String]): Unit = {
     SimpleSpider()
       .withStartUrl(Seq(
-        "http://cdnsfb.soufunimg.com/7/2017_11/24/M11/21/e6df6a967c034a99a64fe3016a309f22.jpg"
+        "https://www.retail-week.com/pictures/1180xany/7/3/9/1357739_Asda.jpg"
       ).map(Request(_)))
       .withPipeline(
         FileDumpPipeline[String](FileUtil.pathWithHome(Seq("data", "spider", "image")))((_: String, r: Response) => {
@@ -22,5 +22,4 @@ object ImageDownloadSpider {
       )
       .start()
   }
-
 }

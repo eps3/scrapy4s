@@ -59,11 +59,12 @@ case class Request(
     while (error_count <= config.tryCount) {
       val client = asyncHttpClient()
       try {
-        val response: asynchttpclient.Response  = client.prepareRequest(
+        val response: asynchttpclient.Response = client.prepareRequest(
           request(this.method, this.url)
             .setFormParams(this.dataAsJava)
             .setHeaders(this.headerAsJava)
             .setHeader("User-Agent", HttpUtil.randomUserAgent)
+            .setRequestTimeout(config.timeOut)
             .setMethod(this.method)
             .build()
         ).execute().get()

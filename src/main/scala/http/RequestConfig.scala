@@ -5,15 +5,41 @@ package http
   */
 case class RequestConfig(
                           tryCount: Int = 10,
+                          timeOut: Int = 50 * 1000,
                           test_func: Response => Boolean = r => r._response.getStatusCode == 200
-                        ){
+                        ) {
   def withTestFunc(tf: Response => Boolean) = {
     new RequestConfig(
       tryCount = this.tryCount,
+      timeOut = this.timeOut,
       test_func = tf
     )
   }
+
+  def withTryCount(newTryCount: Int) = {
+    new RequestConfig(
+      tryCount = newTryCount,
+      timeOut = this.timeOut,
+      test_func = this.test_func
+    )
+  }
+
+  def withTimeOut(newTimeOut: Int) = {
+    new RequestConfig(
+      tryCount = this.tryCount,
+      timeOut = newTimeOut,
+      test_func = this.test_func
+    )
+  }
 }
+
 object RequestConfig {
   val default = new RequestConfig()
+
+  def apply(
+             tryCount: Int = 10,
+             timeOut: Int = 50 * 1000,
+             test_func: Response => Boolean = r => r._response.getStatusCode == 200
+           ): RequestConfig = new RequestConfig(tryCount, timeOut, test_func)
+
 }
