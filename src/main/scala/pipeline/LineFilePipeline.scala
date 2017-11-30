@@ -20,6 +20,7 @@ class LineFilePipeline[T](
   }
 
   override def shutdownHook(): Unit = {
+    logger.info(s"save to -> $filePath")
     writer.close()
   }
 }

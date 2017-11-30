@@ -11,7 +11,6 @@ import scala.collection.JavaConverters._
 case class Request(
                     url: String,
                     method: String = Method.GET,
-                    param: Map[String, Seq[String]] = Map.empty,
                     data: Map[String, Seq[String]] = Map.empty,
                     header: Map[String, Seq[String]] = Map.empty
                   ) {
@@ -39,8 +38,13 @@ case class Request(
     data.map(m => m._1 -> m._2.asJava).asJava
   }
 
-  def paramAsJava = {
-    param.map(m => m._1 -> m._2.asJava).asJava
+  def withHeader(key: String, value: String) = {
+    Request(
+      url = url,
+      method = method,
+      data = data,
+      header = header + (key -> Seq(value))
+    )
   }
 
   /**
@@ -60,7 +64,6 @@ case class Request(
             .setFormParams(this.dataAsJava)
             .setHeaders(this.headerAsJava)
             .setHeader("User-Agent", HttpUtil.randomUserAgent)
-            .setQueryParams(this.paramAsJava)
             .setMethod(this.method)
             .build()
         ).execute().get()
@@ -74,7 +77,7 @@ case class Request(
         case e: Exception =>
           error_count += 1
           if (error_count > config.tryCount) {
-            throw new Exception(s"try count is max -> ${config.tryCount}", e)
+            throw new Exception(s"try count is max -> ${config.tryCount}, url -> $url", e)
           }
       } finally {
         client.close()

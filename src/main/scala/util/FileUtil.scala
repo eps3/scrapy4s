@@ -19,7 +19,7 @@ object FileUtil {
   }
 
   def getLine(filePath: String): Seq[String] = {
-    Source.fromFile(FileUtil.pathWithHome(Seq("data", "spider", "baidu", "querys.txt"))).getLines.toList
+    Source.fromFile(filePath).getLines.toList
   }
 
 }

@@ -120,22 +120,32 @@ case class Spider[T](
     */
   def execute(request: Request): Unit = {
     threadPool.execute(() => {
-      /**
-        * 判断是否已经爬取过
-        */
-      if(scheduler.check(request)) {
-        logger.info(s"crawler -> ${request.method}: ${request.url}")
-        val response = request.execute(this)
-        val model = paser(response)
-
+      try {
         /**
-          * 执行数据操作
+          * 判断是否已经爬取过
           */
-        pipelines.foreach(p => {
-          p.pipe(model, response)
-        })
-      } else {
-        logger.debug(s"$request has bean spider !")
+        if(scheduler.check(request)) {
+          logger.info(s"crawler -> ${request.method}: ${request.url}")
+          val response = request.execute(this)
+          val model = paser(response)
+
+          /**
+            * 执行数据操作
+            */
+          pipelines.foreach(p => {
+            try {
+              p.pipe(model, response)
+            } catch {
+              case e: Exception =>
+                logger.error(s"pipe error, pipe: $p, request: ${request.url}", e)
+            }
+          })
+        } else {
+          logger.debug(s"$request has bean spider !")
+        }
+      } catch {
+        case e: Exception =>
+          logger.error(s"request: ${request.url} error", e)
       }
     })
   }

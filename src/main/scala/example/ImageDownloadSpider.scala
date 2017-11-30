@@ -1,7 +1,7 @@
 package example
 
 import http.{Request, Response}
-import pipeline.HtmlSavePipeline
+import pipeline.{FileDumpPipeline, HtmlSavePipeline}
 import spider.SimpleSpider
 import util.FileUtil
 
@@ -15,7 +15,7 @@ object ImageDownloadSpider {
         "http://cdnsfb.soufunimg.com/7/2017_11/24/M11/21/e6df6a967c034a99a64fe3016a309f22.jpg"
       ).map(Request(_)))
       .withPipeline(
-        HtmlSavePipeline[String](FileUtil.pathWithHome(Seq("data", "spider", "image")))((_: String, r: Response) => {
+        FileDumpPipeline[String](FileUtil.pathWithHome(Seq("data", "spider", "image")))((_: String, r: Response) => {
           val splitArr = r.request.url.split("/")
           splitArr(splitArr.length - 1)
         })

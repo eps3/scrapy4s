@@ -1,9 +1,9 @@
 package pipeline
 
 import java.io.{File, FileWriter}
-import java.security.MessageDigest
 
 import http.Response
+import util.HashUtil
 
 /**
   * Created by sheep3 on 2017/11/28.
@@ -24,18 +24,12 @@ abstract class HtmlSavePipeline[T](fileDir: String) extends SingleThreadPipeline
 }
 
 object HtmlSavePipeline {
-  def apply[T](fileDir: String)(implicit p: (T, Response) => String = (_: T, r: Response) => getHash(r.request.toString)): HtmlSavePipeline[T] = {
+  def apply[T](fileDir: String)(implicit p: (T, Response) => String = (_: T, r: Response) => HashUtil.getHash(r.request.toString)): HtmlSavePipeline[T] = {
     new HtmlSavePipeline[T](fileDir) {
       override def fileName(t: T, response: Response) = {
         p(t, response)
       }
     }
-  }
-
-  def getHash(str: String): String = {
-    val md5Digest: MessageDigest = MessageDigest.getInstance("MD5")
-    val hash = md5Digest.digest(str.getBytes("UTF-8"))
-    hash.map("%02x".format(_)).mkString.toUpperCase
   }
 
 }
