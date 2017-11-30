@@ -35,7 +35,10 @@ object ExampleSpider {
 }
 ```
 
-
+##### 2.1 例子
+ 
+ - [com.scrapy4s.example.ExampleSpider](./src/main/scala/com/scrapy4s/example/ExampleSpider.scala) 简单的爬取例子
+ - [com.scrapy4s.example.MeiziSpider](./src/main/scala/com/scrapy4s/example/MeiziSpider.scala) 妹子图爬虫
 
 #### 3 pipeline 
 
@@ -81,7 +84,7 @@ val fileDumpPipeline = FileDumpPipeline[String]("~/data/")((body: String, r: Res
 #### Update Log
 
 - 2017-11-27
-  - 完成了简单初版 例子代码 -> example.ExampleSpider
+  - 完成了简单初版 例子代码
 - 2017-11-30
   - 完善了大部分功能
 
