@@ -12,10 +12,10 @@
 #### 2. 使用
 
 ```scala
-import http.Request
-import pipeline.HtmlSavePipeline
-import spider.SimpleSpider
-import util.FileUtil
+import com.scrapy4s.http.Request
+import com.scrapy4s.pipeline.HtmlSavePipeline
+import com.scrapy4s.spider.SimpleSpider
+import com.scrapy4s.util.FileUtil
 
 object ExampleSpider {
   def main(args: Array[String]): Unit = {
@@ -40,6 +40,8 @@ object ExampleSpider {
 ##### 2.1.1 LineFilePipeline 行数据Pipeline
 
 ```scala
+import com.scrapy4s.pipeline.LineFilePipeline
+import com.scrapy4s.http.Response
 // 第一个参数是目标文件
 // 第二个参数是需要存的行数据解析函数
 val lineFilePipeline = LineFilePipeline("~/data/line.txt")((body: String, response: Response) => {
@@ -52,10 +54,12 @@ val lineFilePipeline = LineFilePipeline("~/data/line.txt")((body: String, respon
 ##### 2.1.2 FileDumpPipeline 文件下载Pipeline
 
 ```scala
+import com.scrapy4s.pipeline.FileDumpPipeline
+import com.scrapy4s.http.Response
 // 第一个参数是存放的文件夹
 // 第二个参数是文件名生成函数
 val fileDumpPipeline = FileDumpPipeline[String]("~/data/")((body: String, r: Response) => {
-  val splitArr = r.request.url.split("/")
+  val splitArr = r.url.split("/")
   splitArr(splitArr.length - 1)
 })
 ```
