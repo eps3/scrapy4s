@@ -1,4 +1,8 @@
-### Scala 版本Scrapy
+### scrapy4s
+
+>  易用的scala爬虫框架
+
+
 
 #### 1. 组件
 
@@ -87,5 +91,6 @@ val fileDumpPipeline = FileDumpPipeline[String]("~/data/")((body: String, r: Res
 - v1: 完成基于传统Java并发API版本的Scrapy
   - 完善Request的封装
   - 添加代理支持
+  - 添加MySqlPipeline
 - v2: 添加异步io以及Akka调度机制
 - v3: 添加web监控管理器
