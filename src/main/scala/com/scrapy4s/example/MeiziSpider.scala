@@ -13,24 +13,26 @@ object MeiziSpider {
     /**
       * 下载器
       */
-    val downloader = SimpleSpider().withPipeline(
-      FileDumpPipeline(FileUtil.pathWithHome(Seq("data", "spider", "meizi")))((t, r) => {
-        HashUtil.getHash(r.url) + ".jpg"
-      })
-    )
+    val downloader = SimpleSpider()
+      .withPipeline(
+        FileDumpPipeline(FileUtil.pathWithHome(Seq("data", "spider", "meizi")))(r => {
+          HashUtil.getHash(r.url) + ".jpg"
+        })
+      )
 
     /**
       * 详情页
       */
-    val detail = SimpleSpider(r => {
-      r.regex("""<img alt=".*?src="(.*?)" /><br />""").map(_ (0)).foreach(url => downloader.execute(Request(url)))
-      r.url
-    })
+    val detail = SimpleSpider()
+      .withPipeline(r => {
+        r.regex("""<img alt=".*?src="(.*?)" /><br />""").map(_ (0)).foreach(url => downloader.execute(Request(url)))
+        r.url
+      })
 
     /**
       * 列表页
       */
-    SimpleSpider(r => {
+    SimpleSpider().withPipeline(r => {
       r.regex("""<a target='_blank' href="(.*?)">""")
         .map(_ (0))
         .foreach(url => detail.execute(Request(url)))

@@ -10,21 +10,21 @@ import org.slf4j.LoggerFactory
 /**
   * Created by sheep3 on 2017/11/28.
   */
-abstract class MultiThreadPipeline[T](threadCount: Int) extends Pipeline[T] {
+abstract class MultiThreadPipeline(threadCount: Int) extends Pipeline {
   val logger = LoggerFactory.getLogger(this.getClass)
   lazy private val threadPool = new ThreadPoolExecutor(threadCount, threadCount,
     0L, TimeUnit.MILLISECONDS,
     new LinkedBlockingQueue[Runnable](),
     new CallerRunsPolicy())
 
-  override def pipe(t: T, response: Response): Unit = {
+  override def pipe(response: Response): Unit = {
     threadPool.execute(() => {
       logger.debug(s"pipe -> exec ${response.url}")
-      execute(t, response)
+      execute(response)
     })
   }
 
-  def execute(t: T, response: Response): Unit
+  def execute(response: Response): Unit
 
   override def close(): Unit = {
     threadPool.shutdown()
@@ -43,9 +43,9 @@ abstract class MultiThreadPipeline[T](threadCount: Int) extends Pipeline[T] {
 }
 
 object MultiThreadPipeline {
-  def apply[T](threadCount: Int = Runtime.getRuntime.availableProcessors() * 2)(p: (T, Response) => Unit): MultiThreadPipeline[T] = {
-    new MultiThreadPipeline[T](threadCount) {
-      override def execute(t: T, response: Response): Unit = p(t, response)
+  def apply[T](threadCount: Int = Runtime.getRuntime.availableProcessors() * 2)(p: Response => Unit): MultiThreadPipeline = {
+    new MultiThreadPipeline(threadCount) {
+      override def execute(response: Response): Unit = p(response)
     }
   }
 }

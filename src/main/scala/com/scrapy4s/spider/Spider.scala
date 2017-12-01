@@ -4,21 +4,19 @@ import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
 
 import com.scrapy4s.http.{Request, RequestConfig, Response}
-import com.scrapy4s.pipeline.Pipeline
+import com.scrapy4s.pipeline.{Pipeline, SimplePipeline}
 import com.scrapy4s.scheduler.{HashSetScheduler, Scheduler}
 import org.slf4j.LoggerFactory
 
 
 /**
   * 爬虫核心类，用于组装爬虫
-  * @tparam T 封装数据的bean
   */
-case class Spider[T](
-                 paser: Response => T,
+case class Spider(
                  threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
                  requestConfig: RequestConfig = RequestConfig.default,
                  startUrl: Seq[Request] = Seq.empty[Request],
-                 pipelines: Seq[Pipeline[T]] = Seq.empty[Pipeline[T]],
+                 pipelines: Seq[Pipeline] = Seq.empty[Pipeline],
                  scheduler: Scheduler = new HashSetScheduler()
                ) {
   val logger = LoggerFactory.getLogger(this.getClass)
@@ -29,8 +27,7 @@ case class Spider[T](
     new CallerRunsPolicy())
 
   def withRequestConfig(rc: RequestConfig) = {
-    new Spider[T](
-      paser = paser,
+    new Spider(
       threadCount = threadCount,
       requestConfig = rc,
       startUrl = startUrl,
@@ -52,8 +49,7 @@ case class Spider[T](
   }
 
   def withStartUrl(urls: Seq[Request]) = {
-    new Spider[T](
-      paser = paser,
+    new Spider(
       threadCount = threadCount,
       requestConfig = requestConfig,
       startUrl = startUrl ++ urls,
@@ -63,8 +59,7 @@ case class Spider[T](
   }
 
   def withThreadCount(count: Int) = {
-    new Spider[T](
-      paser = paser,
+    new Spider(
       threadCount = count,
       requestConfig = requestConfig,
       startUrl = startUrl,
@@ -73,9 +68,8 @@ case class Spider[T](
     )
   }
 
-  def withPipeline(pipeline: Pipeline[T]) = {
-    new Spider[T](
-      paser = paser,
+  def withPipeline(pipeline: Pipeline): Spider = {
+    new Spider(
       threadCount = threadCount,
       requestConfig = requestConfig,
       startUrl = startUrl,
@@ -84,9 +78,12 @@ case class Spider[T](
     )
   }
 
+  def withPipeline(p: Response => Unit): Spider = {
+    withPipeline(SimplePipeline(p))
+  }
+
   def withScheduler(s: Scheduler) = {
-    new Spider[T](
-      paser = paser,
+    new Spider(
       threadCount = threadCount,
       requestConfig = requestConfig,
       startUrl = startUrl,
@@ -95,16 +92,6 @@ case class Spider[T](
     )
   }
 
-  def withPaser(p: Response => T) = {
-    new Spider[T](
-      paser = p,
-      threadCount = threadCount,
-      requestConfig = requestConfig,
-      startUrl = startUrl,
-      pipelines = pipelines,
-      scheduler = scheduler
-    )
-  }
 
   def start() ={
     run()
@@ -144,14 +131,13 @@ case class Spider[T](
           */
         if(scheduler.check(request)) {
           val response = request.execute(this)
-          val model = paser(response)
 
           /**
             * 执行数据操作
             */
           pipelines.foreach(p => {
             try {
-              p.pipe(model, response)
+              p.pipe(response)
             } catch {
               case e: Exception =>
                 logger.error(s"pipe error, pipe: $p, request: ${request.url}", e)
@@ -169,5 +155,5 @@ case class Spider[T](
   }
 }
 object Spider{
-  def apply[T](p: Response => T): Spider[T] = new Spider[T](p)
+  def apply(): Spider = new Spider()
 }

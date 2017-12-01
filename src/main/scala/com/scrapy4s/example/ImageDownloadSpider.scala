@@ -15,7 +15,7 @@ object ImageDownloadSpider {
         "https://www.retail-week.com/pictures/1180xany/7/3/9/1357739_Asda.jpg"
       ).map(Request(_)))
       .withPipeline(
-        FileDumpPipeline[String](FileUtil.pathWithHome(Seq("data", "spider", "image")))((_: String, r: Response) => {
+        FileDumpPipeline(FileUtil.pathWithHome(Seq("data", "spider", "image")))(r => {
           val splitArr = r.url.split("/")
           splitArr(splitArr.length - 1)
         })

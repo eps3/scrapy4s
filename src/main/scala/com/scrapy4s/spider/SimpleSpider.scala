@@ -1,12 +1,10 @@
 package com.scrapy4s.spider
 
-import com.scrapy4s.http.Response
 
-
-class SimpleSpider(linePaser: Response => String) extends Spider[String](linePaser) {
+class SimpleSpider extends Spider {
 
 }
 
 object SimpleSpider {
-  def apply(linePaser: Response => String = r => r.body): SimpleSpider = new SimpleSpider(linePaser)
+  def apply(): SimpleSpider = new SimpleSpider()
 }

@@ -54,7 +54,7 @@ case class Request(
     *
     * @return 返回Response对象
     */
-  def execute(spider: Spider[_]): Response = execute(spider.requestConfig)
+  def execute(spider: Spider): Response = execute(spider.requestConfig)
 
   def execute(config: RequestConfig = RequestConfig.default): Response = {
     logger.info(s"crawler -> ${this.method}: ${this.url}")

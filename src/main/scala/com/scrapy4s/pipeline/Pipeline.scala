@@ -6,8 +6,12 @@ import com.scrapy4s.http.Response
 /**
   * 数据管道
   */
-trait Pipeline[T] {
-  def pipe(t: T, response: Response)
+trait Pipeline {
+  def pipe(response: Response)
 
   def close()
+}
+
+object Pipeline {
+
 }

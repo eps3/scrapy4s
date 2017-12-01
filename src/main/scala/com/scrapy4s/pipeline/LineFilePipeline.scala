@@ -5,16 +5,16 @@ import java.io.FileWriter
 import com.scrapy4s.http.Response
 
 
-class LineFilePipeline[T](
-                           filePath: String,
-                           threadCount: Int = 1,
-                           linePaser: (T, Response) => String = (t: T, _: Response) => s"$t"
-                         ) extends MultiThreadPipeline[T](threadCount) {
+class LineFilePipeline(
+                        filePath: String,
+                        threadCount: Int = 1,
+                        linePaser: Response => String
+                      ) extends MultiThreadPipeline(threadCount) {
 
   val writer = new FileWriter(filePath)
 
-  override def execute(t: T, response: Response): Unit = {
-    val line = linePaser(t, response)
+  override def execute(response: Response): Unit = {
+    val line = linePaser(response)
     this.synchronized {
       writer.write(s"$line\n")
     }
@@ -27,7 +27,8 @@ class LineFilePipeline[T](
 }
 
 object LineFilePipeline {
-  def apply[T](filePath: String, threadCount: Int = 1)(implicit linePaser: (T, Response) => String = (t: T, _: Response) => s"$t"): LineFilePipeline[T] = {
-    new LineFilePipeline[T](filePath, threadCount = threadCount, linePaser = linePaser)
+  def apply[T](filePath: String, threadCount: Int = 1)
+              (implicit linePaser: Response => String = r => s"${r.body}"): LineFilePipeline = {
+    new LineFilePipeline(filePath, threadCount = threadCount, linePaser = linePaser)
   }
 }

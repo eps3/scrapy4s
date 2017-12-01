@@ -14,8 +14,9 @@ object ExampleSpider {
           "https://segmentfault.com",
           "https://segmentfault.com/q/1010000012185894"
         ).map(Request(_)))
-      .withPipeline(HtmlSavePipeline[String](FileUtil.pathWithHome(Seq("data", "spider", "example"))))
+      .withPipeline(HtmlSavePipeline(FileUtil.pathWithHome(Seq("data", "spider", "example"))))
       .start()
   }
+
 
 }

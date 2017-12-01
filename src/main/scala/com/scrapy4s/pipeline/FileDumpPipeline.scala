@@ -9,12 +9,12 @@ import com.scrapy4s.util.HashUtil
 /**
   * Created by sheep3 on 2017/11/30.
   */
-abstract class FileDumpPipeline [T](fileDir: String) extends SingleThreadPipeline[T] {
+abstract class FileDumpPipeline(fileDir: String) extends SingleThreadPipeline {
 
-  def fileName(t: T, response: Response): String
+  def fileName(response: Response): String
 
-  override def execute(t: T, response: Response): Unit = {
-    val file = new File(fileDir , fileName(t, response))
+  override def execute(response: Response): Unit = {
+    val file = new File(fileDir , fileName(response))
     val outStream = new FileOutputStream(file)
     val buffer = new Array[Byte](response.inputStream.available())
     response.inputStream.read(buffer)
@@ -26,10 +26,10 @@ abstract class FileDumpPipeline [T](fileDir: String) extends SingleThreadPipelin
 }
 
 object FileDumpPipeline {
-  def apply[T](fileDir: String)(implicit p: (T, Response) => String = (_: T, r: Response) => HashUtil.getHash(r.request.toString)): FileDumpPipeline[T] = {
-    new FileDumpPipeline[T](fileDir) {
-      override def fileName(t: T, response: Response) = {
-        p(t, response)
+  def apply(fileDir: String)(implicit p: Response => String = r => HashUtil.getHash(r.request.toString)): FileDumpPipeline = {
+    new FileDumpPipeline(fileDir) {
+      override def fileName(response: Response) = {
+        p(response)
       }
     }
   }

@@ -7,13 +7,13 @@ import org.slf4j.LoggerFactory
 /**
   * 基于日志打印的Pipe
   */
-class LoggerPipeline[T] extends SingleThreadPipeline[T] {
-  override val logger = LoggerFactory.getLogger(classOf[LoggerPipeline[T]])
-  override def execute(t: T, response: Response): Unit = {
-    logger.info(s"get new data => $t")
+class LoggerPipeline extends SingleThreadPipeline {
+  override val logger = LoggerFactory.getLogger(classOf[LoggerPipeline])
+  override def execute(response: Response): Unit = {
+    logger.info(s"get new data => ${response.body}")
   }
 }
 object LoggerPipeline {
 
-  def apply[T](): LoggerPipeline[T] = new LoggerPipeline[T]
+  def apply(): LoggerPipeline = new LoggerPipeline
 }
