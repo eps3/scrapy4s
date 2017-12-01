@@ -27,17 +27,21 @@ object MeiziSpider {
     /**
       * 列表页
       */
-    Spider().pipe(
-      _.regex("""<a target='_blank' href="(.*?)">""")
+    Spider().pipeForRequest(r => {
+      /**
+        * 获取详情页
+        */
+      r.regex("""<a target='_blank' href="(.*?)">""")
         .map(_ (0))
         .foreach(url => detail.execute(Request(url)))
-    ).setStartUrl((1 to 72).map(i => Request(s"http://www.meizitu.com/a/more_$i.html")))
-      .start()
 
-    /**
-      * 按任务顺序挨个等待关闭
-      */
-    detail.waitForShop()
-    downloader.waitForShop()
+      /**
+        * 获取新的列表页
+        */
+      r.regex("""<li><a href='(.*?)'>""")
+        .map(_ (0))
+        .map(i => Request(s"http://www.meizitu.com/a/$i"))
+    }).setStartUrl(Request(s"http://www.meizitu.com/a/more_1.html"))
+      .run()
   }
 }

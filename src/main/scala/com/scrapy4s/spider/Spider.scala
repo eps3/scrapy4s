@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
 
 import com.scrapy4s.http.{Request, RequestConfig, Response}
-import com.scrapy4s.pipeline.{MultiThreadPipeline, Pipeline}
+import com.scrapy4s.pipeline.{MultiThreadPipeline, Pipeline, RequestPipeline}
 import com.scrapy4s.scheduler.{HashSetScheduler, Scheduler}
 import org.slf4j.LoggerFactory
 
@@ -58,6 +58,16 @@ case class Spider(
     )
   }
 
+  def setStartUrl(urls: Request) = {
+    new Spider(
+      threadCount = threadCount,
+      requestConfig = requestConfig,
+      startUrl = startUrl :+ urls,
+      pipelines = pipelines,
+      scheduler = scheduler
+    )
+  }
+
   def setThreadCount(count: Int) = {
     new Spider(
       threadCount = count,
@@ -81,6 +91,10 @@ case class Spider(
       pipelines = pipelines :+ pipeline,
       scheduler = scheduler
     )
+  }
+
+  def pipeForRequest(request: Response => Seq[Request]): Spider = {
+    pipe(RequestPipeline(request))
   }
 
   /**
@@ -134,7 +148,7 @@ case class Spider(
     * 提交请求任务到线程池
     * @param request 等待执行的请求
     */
-  def execute(request: Request) = {
+  def execute(request: Request): Unit = {
     threadPool.execute(() => {
       try {
         /**
@@ -148,7 +162,7 @@ case class Spider(
             */
           pipelines.foreach(p => {
             try {
-              p.pipe(response)
+              p.pipeForRequest(response).foreach(request => this.execute(request))
             } catch {
               case e: Exception =>
                 logger.error(s"pipe error, pipe: $p, request: ${request.url}", e)
@@ -162,7 +176,6 @@ case class Spider(
           logger.error(s"request: ${request.url} error", e)
       }
     })
-    this
   }
 }
 object Spider{

@@ -44,7 +44,7 @@ object ExampleSpider {
       ).map(Request(_)))
       // 设置数据处理器
       .pipe(HtmlSavePipeline(FileUtil.pathWithHome(Seq("data", "spider", "example"))))
-      .start()
+      .run()
   }
 }
 ```
