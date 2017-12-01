@@ -21,6 +21,7 @@ import com.scrapy4s.pipeline.HtmlSavePipeline
 import com.scrapy4s.spider.SimpleSpider
 import com.scrapy4s.util.FileUtil
 
+
 object ExampleSpider {
   def main(args: Array[String]): Unit = {
     SimpleSpider()
@@ -29,7 +30,7 @@ object ExampleSpider {
           "https://segmentfault.com",
           "https://segmentfault.com/q/1010000012185894"
         ).map(Request(_)))
-      .withPipeline(HtmlSavePipeline[String]("~/data/"))
+      .withPipeline(HtmlSavePipeline(FileUtil.pathWithHome(Seq("data", "spider", "example"))))
       .start()
   }
 }
@@ -37,7 +38,6 @@ object ExampleSpider {
 
 ##### 2.1 例子
  
- - [com.scrapy4s.example.ExampleSpider](./src/main/scala/com/scrapy4s/example/ExampleSpider.scala) 简单的爬取例子
  - [com.scrapy4s.example.MeiziSpider](./src/main/scala/com/scrapy4s/example/MeiziSpider.scala) 妹子图爬虫
 
 #### 3 pipeline 
@@ -51,7 +51,7 @@ import com.scrapy4s.pipeline.LineFilePipeline
 import com.scrapy4s.http.Response
 // 第一个参数是目标文件
 // 第二个参数是需要存的行数据解析函数
-val lineFilePipeline = LineFilePipeline("~/data/line.txt")((body: String, response: Response) => {
+val lineFilePipeline = LineFilePipeline("~/data/line.txt")(response => {
   s"${response.url} ${response.statusCode}"
 })
 ```
@@ -65,15 +65,15 @@ import com.scrapy4s.pipeline.FileDumpPipeline
 import com.scrapy4s.http.Response
 // 第一个参数是存放的文件夹
 // 第二个参数是文件名生成函数
-val fileDumpPipeline = FileDumpPipeline[String]("~/data/")((body: String, r: Response) => {
-  val splitArr = r.url.split("/")
+val fileDumpPipeline = FileDumpPipeline("~/data/")(response => {
+  val splitArr = response.url.split("/")
   splitArr(splitArr.length - 1)
 })
 ```
 
 
 
-##### 2.1.3 Other Pileline
+##### 2.1.3 Other Pipeline
 
 - LoggerPipeline 打印日志的Pipeline
 - MultiThreadPipeline 多线程Pipeline

@@ -17,6 +17,4 @@ object ExampleSpider {
       .withPipeline(HtmlSavePipeline(FileUtil.pathWithHome(Seq("data", "spider", "example"))))
       .start()
   }
-
-
 }
