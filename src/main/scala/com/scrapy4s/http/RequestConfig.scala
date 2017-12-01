@@ -4,9 +4,9 @@ package com.scrapy4s.http
   * Created by sheep3 on 2017/11/29.
   */
 case class RequestConfig(
-                          tryCount: Int = 10,
-                          timeOut: Int = 50 * 1000,
-                          test_func: Response => Boolean = r => r._response.getStatusCode == 200
+                          tryCount: Int,
+                          timeOut: Int,
+                          test_func: Response => Boolean
                         ) {
   def withTestFunc(tf: Response => Boolean) = {
     new RequestConfig(
@@ -34,12 +34,12 @@ case class RequestConfig(
 }
 
 object RequestConfig {
-  val default = new RequestConfig()
+  val default = RequestConfig()
 
   def apply(
              tryCount: Int = 10,
              timeOut: Int = 50 * 1000,
-             test_func: Response => Boolean = r => r._response.getStatusCode == 200
+             test_func: Response => Boolean = r => r._response.getStatusCode < 400
            ): RequestConfig = new RequestConfig(tryCount, timeOut, test_func)
 
 }

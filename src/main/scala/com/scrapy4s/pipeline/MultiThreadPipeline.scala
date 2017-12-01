@@ -19,7 +19,7 @@ abstract class MultiThreadPipeline[T](threadCount: Int) extends Pipeline[T] {
 
   override def pipe(t: T, response: Response): Unit = {
     threadPool.execute(() => {
-      logger.debug(s"pipe -> exec $t")
+      logger.debug(s"pipe -> exec ${response.url}")
       execute(t, response)
     })
   }

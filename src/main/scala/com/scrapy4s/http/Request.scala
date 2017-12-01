@@ -5,6 +5,7 @@ import com.scrapy4s.spider.Spider
 import com.scrapy4s.util.HttpUtil
 import org.asynchttpclient
 import org.asynchttpclient.Dsl.{asyncHttpClient, _}
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
@@ -14,6 +15,7 @@ case class Request(
                     data: Map[String, Seq[String]] = Map.empty,
                     header: Map[String, Seq[String]] = Map.empty
                   ) {
+  val logger = LoggerFactory.getLogger(classOf[Request])
   override def equals(obj: scala.Any) = {
     obj match {
       case _obj: Request =>
@@ -66,6 +68,7 @@ case class Request(
             .setHeader("User-Agent", HttpUtil.randomUserAgent)
             .setRequestTimeout(config.timeOut)
             .setMethod(this.method)
+            .setFollowRedirect(true)
             .build()
         ).execute().get()
         val _res = Response(this, response)
@@ -79,6 +82,8 @@ case class Request(
           error_count += 1
           if (error_count > config.tryCount) {
             throw new Exception(s"try count is max -> ${config.tryCount}, url -> $url", e)
+          } else {
+            logger.warn(s"request error: ${e.getMessage}, try $error_count times .... $method -> $url")
           }
       } finally {
         client.close()
