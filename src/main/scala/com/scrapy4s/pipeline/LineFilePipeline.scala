@@ -3,32 +3,33 @@ package com.scrapy4s.pipeline
 import java.io.FileWriter
 
 import com.scrapy4s.http.Response
+import org.slf4j.LoggerFactory
 
 
 class LineFilePipeline(
                         filePath: String,
-                        threadCount: Int = 1,
                         linePaser: Response => String
-                      ) extends MultiThreadPipeline(threadCount) {
+                      ) extends Pipeline  {
+  val logger = LoggerFactory.getLogger(classOf[LineFilePipeline])
 
   val writer = new FileWriter(filePath)
 
-  override def execute(response: Response): Unit = {
+  def pipe(response: Response): Unit = {
     val line = linePaser(response)
     this.synchronized {
       writer.write(s"$line\n")
     }
   }
 
-  override def shutdownHook(): Unit = {
+  override def close(): Unit = {
     logger.info(s"save to -> $filePath")
     writer.close()
   }
 }
 
 object LineFilePipeline {
-  def apply[T](filePath: String, threadCount: Int = 1)
-              (implicit linePaser: Response => String = r => s"${r.body}"): LineFilePipeline = {
-    new LineFilePipeline(filePath, threadCount = threadCount, linePaser = linePaser)
+  def apply[T](filePath: String)
+              (implicit linePaser: Response => String = r => s"${r.body}"): Pipeline = {
+    SingleThreadPipeline(new LineFilePipeline(filePath, linePaser = linePaser))
   }
 }

@@ -15,3 +15,6 @@ class HashSetScheduler extends Scheduler {
     hashSet.add(request)
   }
 }
+object HashSetScheduler {
+  def apply(): HashSetScheduler = new HashSetScheduler()
+}

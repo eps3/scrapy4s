@@ -8,10 +8,15 @@ import org.slf4j.LoggerFactory
 
 
 /**
+  * 多线程处理器
   * Created by sheep3 on 2017/11/28.
   */
-abstract class MultiThreadPipeline(threadCount: Int) extends Pipeline {
-  val logger = LoggerFactory.getLogger(this.getClass)
+class MultiThreadPipeline(threadCount: Int,
+                                  pipe: Pipeline
+                                 ) extends Pipeline {
+
+  val logger = LoggerFactory.getLogger(classOf[MultiThreadPipeline])
+
   lazy private val threadPool = new ThreadPoolExecutor(threadCount, threadCount,
     0L, TimeUnit.MILLISECONDS,
     new LinkedBlockingQueue[Runnable](),
@@ -20,32 +25,22 @@ abstract class MultiThreadPipeline(threadCount: Int) extends Pipeline {
   override def pipe(response: Response): Unit = {
     threadPool.execute(() => {
       logger.debug(s"pipe -> exec ${response.url}")
-      execute(response)
+      pipe.pipe(response)
     })
   }
-
-  def execute(response: Response): Unit
 
   override def close(): Unit = {
     threadPool.shutdown()
     while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
       logger.debug("wait for spider done ...")
     }
-    shutdownHook()
+    pipe.close()
     logger.debug("spider done !")
   }
 
-  /**
-    * 给子类用于资源收尾
-    */
-  def shutdownHook() = {
-  }
 }
 
 object MultiThreadPipeline {
-  def apply[T](threadCount: Int = Runtime.getRuntime.availableProcessors() * 2)(p: Response => Unit): MultiThreadPipeline = {
-    new MultiThreadPipeline(threadCount) {
-      override def execute(response: Response): Unit = p(response)
-    }
-  }
+  def apply[T](pipe: Pipeline)
+              (implicit threadCount: Int = Runtime.getRuntime.availableProcessors() * 2): MultiThreadPipeline = new MultiThreadPipeline(threadCount, pipe)
 }

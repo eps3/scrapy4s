@@ -9,7 +9,9 @@ import com.scrapy4s.http.Response
 trait Pipeline {
   def pipe(response: Response)
 
-  def close()
+  def close() = {
+
+  }
 }
 
 object Pipeline {

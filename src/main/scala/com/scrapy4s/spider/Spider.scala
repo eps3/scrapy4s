@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
 
 import com.scrapy4s.http.{Request, RequestConfig, Response}
-import com.scrapy4s.pipeline.{Pipeline, SimplePipeline}
+import com.scrapy4s.pipeline.{MultiThreadPipeline, Pipeline}
 import com.scrapy4s.scheduler.{HashSetScheduler, Scheduler}
 import org.slf4j.LoggerFactory
 
@@ -17,7 +17,7 @@ case class Spider(
                  requestConfig: RequestConfig = RequestConfig.default,
                  startUrl: Seq[Request] = Seq.empty[Request],
                  pipelines: Seq[Pipeline] = Seq.empty[Pipeline],
-                 scheduler: Scheduler = new HashSetScheduler()
+                 scheduler: Scheduler = HashSetScheduler()
                ) {
   val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -26,7 +26,7 @@ case class Spider(
     new LinkedBlockingQueue[Runnable](),
     new CallerRunsPolicy())
 
-  def withRequestConfig(rc: RequestConfig) = {
+  def setRequestConfig(rc: RequestConfig) = {
     new Spider(
       threadCount = threadCount,
       requestConfig = rc,
@@ -36,19 +36,19 @@ case class Spider(
     )
   }
 
-  def withTestFunc(test_func: Response => Boolean) = {
-    withRequestConfig(requestConfig.withTestFunc(test_func))
+  def setTestFunc(test_func: Response => Boolean) = {
+    setRequestConfig(requestConfig.withTestFunc(test_func))
   }
 
-  def withTimeOut(timeOut: Int) = {
-    withRequestConfig(requestConfig.withTimeOut(timeOut))
+  def setTimeOut(timeOut: Int) = {
+    setRequestConfig(requestConfig.withTimeOut(timeOut))
   }
 
-  def withTryCount(tryCount: Int) = {
-    withRequestConfig(requestConfig.withTryCount(tryCount))
+  def setTryCount(tryCount: Int) = {
+    setRequestConfig(requestConfig.withTryCount(tryCount))
   }
 
-  def withStartUrl(urls: Seq[Request]) = {
+  def setStartUrl(urls: Seq[Request]) = {
     new Spider(
       threadCount = threadCount,
       requestConfig = requestConfig,
@@ -58,7 +58,7 @@ case class Spider(
     )
   }
 
-  def withThreadCount(count: Int) = {
+  def setThreadCount(count: Int) = {
     new Spider(
       threadCount = count,
       requestConfig = requestConfig,
@@ -68,7 +68,12 @@ case class Spider(
     )
   }
 
-  def withPipeline(pipeline: Pipeline): Spider = {
+  /**
+    * 添加数据管道
+    * @param pipeline 添加新的数据管道
+    * @return
+    */
+  def pipe(pipeline: Pipeline): Spider = {
     new Spider(
       threadCount = threadCount,
       requestConfig = requestConfig,
@@ -78,11 +83,17 @@ case class Spider(
     )
   }
 
-  def withPipeline(p: Response => Unit): Spider = {
-    withPipeline(SimplePipeline(p))
+  /**
+    * 将数据丢入一个新的线程池处理
+    * @param pipeline 执行的数据操作
+    * @param threadCount 池大小线程数
+    * @return
+    */
+  def fork(pipeline: Pipeline)(implicit threadCount: Int = Runtime.getRuntime.availableProcessors() * 2): Spider = {
+    pipe(MultiThreadPipeline(pipeline)(threadCount))
   }
 
-  def withScheduler(s: Scheduler) = {
+  def setScheduler(s: Scheduler) = {
     new Spider(
       threadCount = threadCount,
       requestConfig = requestConfig,

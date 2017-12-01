@@ -7,10 +7,6 @@ import com.scrapy4s.http.Response
 class SimplePipeline(p: Response => Unit) extends Pipeline{
 
   override def pipe(response: Response): Unit = p(response)
-
-  override def close(): Unit = {
-  }
-
 }
 
 object SimplePipeline {

@@ -2,7 +2,7 @@ package com.scrapy4s.example
 
 import com.scrapy4s.http.Request
 import com.scrapy4s.pipeline.FileDumpPipeline
-import com.scrapy4s.spider.SimpleSpider
+import com.scrapy4s.spider.Spider
 import com.scrapy4s.util.{FileUtil, HashUtil}
 
 /**
@@ -13,31 +13,25 @@ object MeiziSpider {
     /**
       * 下载器
       */
-    val downloader = SimpleSpider()
-      .withPipeline(
-        FileDumpPipeline(FileUtil.pathWithHome(Seq("data", "spider", "meizi")))(r => {
-          HashUtil.getHash(r.url) + ".jpg"
-        })
-      )
+    val downloader = Spider().pipe(
+      FileDumpPipeline(FileUtil.pathWithHome(Seq("data", "spider", "meizi")))(r => {
+        HashUtil.getHash(r.url) + ".jpg"
+      })
+    )
 
     /**
       * 详情页
       */
-    val detail = SimpleSpider()
-      .withPipeline(r => {
-        r.regex("""<img alt=".*?src="(.*?)" /><br />""").map(_ (0)).foreach(url => downloader.execute(Request(url)))
-        r.url
-      })
+    val detail = Spider().pipe(_.regex("""<img alt=".*?src="(.*?)" /><br />""").map(_ (0)).foreach(url => downloader.execute(Request(url))))
 
     /**
       * 列表页
       */
-    SimpleSpider().withPipeline(r => {
-      r.regex("""<a target='_blank' href="(.*?)">""")
+    Spider().pipe(
+      _.regex("""<a target='_blank' href="(.*?)">""")
         .map(_ (0))
         .foreach(url => detail.execute(Request(url)))
-      r.url
-    }).withStartUrl((1 to 72).map(i => Request(s"http://www.meizitu.com/a/more_$i.html")))
+    ).setStartUrl((1 to 72).map(i => Request(s"http://www.meizitu.com/a/more_$i.html")))
       .start()
 
     /**
