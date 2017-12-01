@@ -57,6 +57,7 @@ case class Request(
   def execute(spider: Spider[_]): Response = execute(spider.requestConfig)
 
   def execute(config: RequestConfig = RequestConfig.default): Response = {
+    logger.info(s"crawler -> ${this.method}: ${this.url}")
     var error_count = 0
     while (error_count <= config.tryCount) {
       val client = asyncHttpClient()

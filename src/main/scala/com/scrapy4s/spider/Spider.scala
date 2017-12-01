@@ -55,6 +55,7 @@ case class Spider[T](
     new Spider[T](
       paser = paser,
       threadCount = threadCount,
+      requestConfig = requestConfig,
       startUrl = startUrl ++ urls,
       pipelines = pipelines,
       scheduler = scheduler
@@ -65,6 +66,7 @@ case class Spider[T](
     new Spider[T](
       paser = paser,
       threadCount = count,
+      requestConfig = requestConfig,
       startUrl = startUrl,
       pipelines = pipelines,
       scheduler = scheduler
@@ -75,6 +77,7 @@ case class Spider[T](
     new Spider[T](
       paser = paser,
       threadCount = threadCount,
+      requestConfig = requestConfig,
       startUrl = startUrl,
       pipelines = pipelines :+ pipeline,
       scheduler = scheduler
@@ -85,6 +88,7 @@ case class Spider[T](
     new Spider[T](
       paser = paser,
       threadCount = threadCount,
+      requestConfig = requestConfig,
       startUrl = startUrl,
       pipelines = pipelines,
       scheduler = s
@@ -95,6 +99,7 @@ case class Spider[T](
     new Spider[T](
       paser = p,
       threadCount = threadCount,
+      requestConfig = requestConfig,
       startUrl = startUrl,
       pipelines = pipelines,
       scheduler = scheduler
@@ -138,7 +143,6 @@ case class Spider[T](
           * 判断是否已经爬取过
           */
         if(scheduler.check(request)) {
-          logger.info(s"crawler -> ${request.method}: ${request.url}")
           val response = request.execute(this)
           val model = paser(response)
 
