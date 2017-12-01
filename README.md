@@ -96,17 +96,21 @@ val fileDumpPipeline = FileDumpPipeline("~/data/")(response => {
 
 #### Update Log
 
+- 2017-12-01
+  - 简化了pipeline模型，为多线程pipe提供了fork方法
+  - 添加了pipeForRequest方法，为爬虫的继续添加驱动
+  - 修复了设置超时时间失败的bug
 - 2017-11-27
   - 完成了简单初版 例子代码
 - 2017-11-30
-  - 完善了大部分功能
+  - 完成了简单爬虫的大部分功能
 
 
 #### TODO
 
 - v1: 完成基于传统Java并发API版本的Scrapy
-  - 完善Request的封装
+  - 为Request添加xpath的封装
   - 添加代理支持
-  - 添加MySqlPipeline
+  - 添加更多的Pipeline支持
 - v2: 添加异步io以及Akka调度机制
 - v3: 添加web监控管理器
