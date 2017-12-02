@@ -48,7 +48,7 @@ case class Spider(
     setRequestConfig(requestConfig.withTryCount(tryCount))
   }
 
-  def setStartUrl(urls: Seq[Request]) = {
+  def setStartUrl(urls: Seq[Request]): Spider = {
     new Spider(
       threadCount = threadCount,
       requestConfig = requestConfig,
@@ -58,11 +58,11 @@ case class Spider(
     )
   }
 
-  def setStartUrl(url: Request) = {
+  def setStartUrl(url: Request): Spider = {
     setStartUrl(Seq(url))
   }
 
-  def setStartUrl(url: String) = {
+  def setStartUrl(url: String): Spider = {
     setStartUrl(Request(url))
   }
 
