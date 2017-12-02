@@ -16,7 +16,6 @@
 #### 2. 使用
 
 ```scala
-import com.scrapy4s.http.Request
 import com.scrapy4s.pipeline.HtmlSavePipeline
 import com.scrapy4s.scheduler.HashSetScheduler
 import com.scrapy4s.spider.Spider
@@ -25,11 +24,11 @@ import com.scrapy4s.util.FileUtil
 
 object ExampleSpider {
   def main(args: Array[String]): Unit = {
-    Spider()
+    val spider = Spider()
       // 设置超时时间
       .setTimeOut(1000 * 5)
       // 设置线程数
-      .setThreadCount(10)
+      .setThreadCount(1)
       // 设置调度器
       .setScheduler(HashSetScheduler())
       // 设置请求成功的测试方法
@@ -37,14 +36,14 @@ object ExampleSpider {
       // 设置请求重试次数
       .setTryCount(3)
       // 设置起始Url
-      .setStartUrl(Seq(
-        "https://segmentfault.com",
-        "https://segmentfault.com",
-        "https://segmentfault.com/q/1010000012185894"
-      ).map(Request(_)))
+      .setStartUrl("https://www.v2ex.com")
+      .pipe(r => {
+        r.xpath("""//span[@class="item_title"]/a/text()""").foreach(println)
+      })
       // 设置数据处理器
       .pipe(HtmlSavePipeline(FileUtil.pathWithHome(Seq("data", "spider", "example"))))
       .run()
+    spider.waitForShop()
   }
 }
 ```
@@ -109,7 +108,7 @@ val fileDumpPipeline = FileDumpPipeline("~/data/")(response => {
 #### TODO
 
 - v1: 完成基于传统Java并发API版本的Scrapy
-  - 为Request添加xpath的封装
+  - ~~为Request添加xpath的封装~~
   - 添加代理支持
   - 添加更多的Pipeline支持
 - v2: 添加异步io以及Akka调度机制
