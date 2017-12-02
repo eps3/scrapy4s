@@ -58,14 +58,12 @@ case class Spider(
     )
   }
 
-  def setStartUrl(urls: Request) = {
-    new Spider(
-      threadCount = threadCount,
-      requestConfig = requestConfig,
-      startUrl = startUrl :+ urls,
-      pipelines = pipelines,
-      scheduler = scheduler
-    )
+  def setStartUrl(url: Request) = {
+    setStartUrl(Seq(url))
+  }
+
+  def setStartUrl(url: String) = {
+    setStartUrl(Request(url))
   }
 
   def setThreadCount(count: Int) = {

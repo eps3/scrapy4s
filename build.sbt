@@ -9,3 +9,4 @@ libraryDependencies += "ch.qos.logback" % "logback-core" % "1.2.3"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
 libraryDependencies += "org.asynchttpclient" % "async-http-client" % "2.0.37"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % Test
+libraryDependencies += "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.21"

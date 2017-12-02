@@ -16,7 +16,7 @@ case class Response(
                    ) {
   def body: String = _response.getResponseBody
 
-  def url: String = request.url
+  def url: String = _response.getUri.toUrl
 
   def method: String = request.method
 
@@ -30,5 +30,9 @@ case class Response(
 
   def regex(r: String) = {
     Extractor.regex(r.r: Regex, body)
+  }
+
+  def xpath(path: String) = {
+    Extractor.xpath(path, body)
   }
 }
