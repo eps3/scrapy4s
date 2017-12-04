@@ -97,6 +97,9 @@ case class Request(
         val _res = Response(this, response)
         // 判断是否成功
         if (config.test_func(_res)) {
+          if (proxy.isDefined) {
+            config.proxyResource.get.returnProxy(proxy.get)
+          }
           return _res
         } else {
           throw new Exception("test function return false")
