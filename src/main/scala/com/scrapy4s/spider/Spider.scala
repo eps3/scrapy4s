@@ -3,6 +3,7 @@ package com.scrapy4s.spider
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
 
+import com.scrapy4s.http.proxy.ProxyResource
 import com.scrapy4s.http.{Request, RequestConfig, Response}
 import com.scrapy4s.pipeline.{MultiThreadPipeline, Pipeline, RequestPipeline}
 import com.scrapy4s.scheduler.{HashSetScheduler, Scheduler}
@@ -13,18 +14,37 @@ import org.slf4j.LoggerFactory
   * 爬虫核心类，用于组装爬虫
   */
 case class Spider(
-                 threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
-                 requestConfig: RequestConfig = RequestConfig.default,
-                 startUrl: Seq[Request] = Seq.empty[Request],
-                 pipelines: Seq[Pipeline] = Seq.empty[Pipeline],
-                 scheduler: Scheduler = HashSetScheduler()
-               ) {
-  val logger = LoggerFactory.getLogger(this.getClass)
+                   threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
+                   requestConfig: RequestConfig = RequestConfig.default,
+                   startUrl: Seq[Request] = Seq.empty[Request],
+                   pipelines: Seq[Pipeline] = Seq.empty[Pipeline],
+                   scheduler: Scheduler = HashSetScheduler(),
+                   currentThreadPool: Option[ThreadPoolExecutor] = None
+                 ) {
+  val logger = LoggerFactory.getLogger(classOf[Spider])
 
-  lazy private val threadPool = new ThreadPoolExecutor(threadCount, threadCount,
-    0L, TimeUnit.MILLISECONDS,
-    new LinkedBlockingQueue[Runnable](),
-    new CallerRunsPolicy())
+  lazy private val threadPool = {
+    currentThreadPool match {
+      case Some(tp) =>
+        tp
+      case _ =>
+        new ThreadPoolExecutor(threadCount, threadCount,
+          0L, TimeUnit.MILLISECONDS,
+          new LinkedBlockingQueue[Runnable](),
+          new CallerRunsPolicy())
+    }
+  }
+
+  def setThreadPool(tp: ThreadPoolExecutor) = {
+    new Spider(
+      threadCount = threadCount,
+      requestConfig = requestConfig,
+      startUrl = startUrl,
+      pipelines = pipelines,
+      scheduler = scheduler,
+      currentThreadPool = Option(tp)
+    )
+  }
 
   def setRequestConfig(rc: RequestConfig) = {
     new Spider(
@@ -32,7 +52,8 @@ case class Spider(
       requestConfig = rc,
       startUrl = startUrl,
       pipelines = pipelines,
-      scheduler = scheduler
+      scheduler = scheduler,
+      currentThreadPool = currentThreadPool
     )
   }
 
@@ -48,13 +69,18 @@ case class Spider(
     setRequestConfig(requestConfig.withTryCount(tryCount))
   }
 
+  def setProxyResource(proxyResource: ProxyResource) = {
+    setRequestConfig(requestConfig.withProxyResource(proxyResource))
+  }
+
   def setStartUrl(urls: Seq[Request]): Spider = {
     new Spider(
       threadCount = threadCount,
       requestConfig = requestConfig,
       startUrl = startUrl ++ urls,
       pipelines = pipelines,
-      scheduler = scheduler
+      scheduler = scheduler,
+      currentThreadPool = currentThreadPool
     )
   }
 
@@ -72,12 +98,14 @@ case class Spider(
       requestConfig = requestConfig,
       startUrl = startUrl,
       pipelines = pipelines,
-      scheduler = scheduler
+      scheduler = scheduler,
+      currentThreadPool = currentThreadPool
     )
   }
 
   /**
     * 添加数据管道
+    *
     * @param pipeline 添加新的数据管道
     * @return
     */
@@ -87,7 +115,8 @@ case class Spider(
       requestConfig = requestConfig,
       startUrl = startUrl,
       pipelines = pipelines :+ pipeline,
-      scheduler = scheduler
+      scheduler = scheduler,
+      currentThreadPool = currentThreadPool
     )
   }
 
@@ -97,7 +126,8 @@ case class Spider(
 
   /**
     * 将数据丢入一个新的线程池处理
-    * @param pipeline 执行的数据操作
+    *
+    * @param pipeline    执行的数据操作
     * @param threadCount 池大小线程数
     * @return
     */
@@ -111,20 +141,22 @@ case class Spider(
       requestConfig = requestConfig,
       startUrl = startUrl,
       pipelines = pipelines,
-      scheduler = s
+      scheduler = s,
+      currentThreadPool = currentThreadPool
     )
   }
 
 
-  def start() ={
+  def start() = {
     run()
     waitForShop()
+    this
   }
 
   /**
     * 初始化爬虫设置，并将初始url倒入任务池中
     */
-  def run() ={
+  def run() = {
     startUrl.foreach(request => {
       execute(request)
     })
@@ -144,6 +176,7 @@ case class Spider(
 
   /**
     * 提交请求任务到线程池
+    *
     * @param request 等待执行的请求
     */
   def execute(request: Request): Unit = {
@@ -152,7 +185,7 @@ case class Spider(
         /**
           * 判断是否已经爬取过
           */
-        if(scheduler.check(request)) {
+        if (scheduler.check(request)) {
           val response = request.execute(this)
 
           /**
@@ -176,6 +209,7 @@ case class Spider(
     })
   }
 }
-object Spider{
+
+object Spider {
   def apply(): Spider = new Spider()
 }
