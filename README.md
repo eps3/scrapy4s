@@ -109,7 +109,8 @@ val fileDumpPipeline = FileDumpPipeline("~/data/")(response => {
 
 - v1: 完成基于传统Java并发API版本的Scrapy
   - ~~为Request添加xpath的封装~~
-  - 添加代理支持
-  - 添加更多的Pipeline支持
+  - ~~添加代理支持~~
+  - ~~添加更多的Pipeline支持~~
+  - 添加进度保存，重启恢复
 - v2: 添加异步io以及Akka调度机制
 - v3: 添加web监控管理器
