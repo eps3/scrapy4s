@@ -14,12 +14,12 @@ import org.slf4j.LoggerFactory
   * 爬虫核心类，用于组装爬虫
   */
 case class Spider(
-                   threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
-                   requestConfig: RequestConfig = RequestConfig.default,
-                   startUrl: Seq[Request] = Seq.empty[Request],
-                   pipelines: Seq[Pipeline] = Seq.empty[Pipeline],
-                   scheduler: Scheduler = HashSetScheduler(),
-                   currentThreadPool: Option[ThreadPoolExecutor] = None
+                   var threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
+                   var requestConfig: RequestConfig = RequestConfig.default,
+                   var startUrl: Seq[Request] = Seq.empty[Request],
+                   var pipelines: Seq[Pipeline] = Seq.empty[Pipeline],
+                   var scheduler: Scheduler = HashSetScheduler(),
+                   var currentThreadPool: Option[ThreadPoolExecutor] = None
                  ) {
   val logger = LoggerFactory.getLogger(classOf[Spider])
 
@@ -36,25 +36,13 @@ case class Spider(
   }
 
   def setThreadPool(tp: ThreadPoolExecutor) = {
-    new Spider(
-      threadCount = threadCount,
-      requestConfig = requestConfig,
-      startUrl = startUrl,
-      pipelines = pipelines,
-      scheduler = scheduler,
-      currentThreadPool = Option(tp)
-    )
+    this.currentThreadPool = Option(tp)
+    this
   }
 
   def setRequestConfig(rc: RequestConfig) = {
-    new Spider(
-      threadCount = threadCount,
-      requestConfig = rc,
-      startUrl = startUrl,
-      pipelines = pipelines,
-      scheduler = scheduler,
-      currentThreadPool = currentThreadPool
-    )
+    this.requestConfig = rc
+    this
   }
 
   def setTestFunc(test_func: Response => Boolean) = {
@@ -74,14 +62,8 @@ case class Spider(
   }
 
   def setStartUrl(urls: Seq[Request]): Spider = {
-    new Spider(
-      threadCount = threadCount,
-      requestConfig = requestConfig,
-      startUrl = startUrl ++ urls,
-      pipelines = pipelines,
-      scheduler = scheduler,
-      currentThreadPool = currentThreadPool
-    )
+    this.startUrl = startUrl ++ urls
+    this
   }
 
   def setStartUrl(url: Request): Spider = {
@@ -93,14 +75,8 @@ case class Spider(
   }
 
   def setThreadCount(count: Int) = {
-    new Spider(
-      threadCount = count,
-      requestConfig = requestConfig,
-      startUrl = startUrl,
-      pipelines = pipelines,
-      scheduler = scheduler,
-      currentThreadPool = currentThreadPool
-    )
+    this.threadCount = count
+    this
   }
 
   /**
@@ -110,14 +86,8 @@ case class Spider(
     * @return
     */
   def pipe(pipeline: Pipeline): Spider = {
-    new Spider(
-      threadCount = threadCount,
-      requestConfig = requestConfig,
-      startUrl = startUrl,
-      pipelines = pipelines :+ pipeline,
-      scheduler = scheduler,
-      currentThreadPool = currentThreadPool
-    )
+    this.pipelines = pipelines :+ pipeline
+    this
   }
 
   def pipeForRequest(request: Response => Seq[Request]): Spider = {
@@ -136,14 +106,8 @@ case class Spider(
   }
 
   def setScheduler(s: Scheduler) = {
-    new Spider(
-      threadCount = threadCount,
-      requestConfig = requestConfig,
-      startUrl = startUrl,
-      pipelines = pipelines,
-      scheduler = s,
-      currentThreadPool = currentThreadPool
-    )
+    this.scheduler = s
+    this
   }
 
 
@@ -160,6 +124,12 @@ case class Spider(
     startUrl.foreach(request => {
       execute(request)
     })
+    Runtime.getRuntime.addShutdownHook(new Thread(() => {
+      pipelines.foreach(p => {
+        p.close()
+      })
+      logger.info("spider done !")
+    }))
     this
   }
 
@@ -168,10 +138,6 @@ case class Spider(
     while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
       logger.debug("wait for spider done ...")
     }
-    pipelines.foreach(p => {
-      p.close()
-    })
-    logger.info("spider done !")
   }
 
   /**
