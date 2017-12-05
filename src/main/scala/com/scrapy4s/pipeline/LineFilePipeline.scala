@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 
 class LineFilePipeline(
                         filePath: String,
-                        linePaser: Response => String
+                        linePaser: Response => Option[String]
                       ) extends Pipeline  {
   val logger = LoggerFactory.getLogger(classOf[LineFilePipeline])
 
@@ -16,8 +16,12 @@ class LineFilePipeline(
 
   def pipe(response: Response): Unit = {
     val line = linePaser(response)
-    this.synchronized {
-      writer.write(s"$line\n")
+    line match {
+      case Some(l) =>
+        this.synchronized {
+          writer.write(s"$l\n")
+        }
+      case _ =>
     }
   }
 
@@ -29,7 +33,7 @@ class LineFilePipeline(
 
 object LineFilePipeline {
   def apply[T](filePath: String)
-              (implicit linePaser: Response => String = r => s"${r.body}"): Pipeline = {
-    SingleThreadPipeline(new LineFilePipeline(filePath, linePaser = linePaser))
+              (implicit linePaser: Response => Option[String] = r => Some(s"${r.body}")): Pipeline = {
+    new LineFilePipeline(filePath, linePaser = linePaser)
   }
 }

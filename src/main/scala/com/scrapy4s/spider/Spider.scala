@@ -13,7 +13,8 @@ import org.slf4j.LoggerFactory
 /**
   * 爬虫核心类，用于组装爬虫
   */
-case class Spider(
+class Spider(
+                   name: String,
                    var threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
                    var requestConfig: RequestConfig = RequestConfig.default,
                    var startUrl: Seq[Request] = Seq.empty[Request],
@@ -128,7 +129,7 @@ case class Spider(
       pipelines.foreach(p => {
         p.close()
       })
-      logger.info("spider done !")
+      logger.info(s"[$name] spider done !")
     }))
     this
   }
@@ -136,7 +137,7 @@ case class Spider(
   def waitForShop() = {
     threadPool.shutdown()
     while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
-      logger.debug("wait for spider done ...")
+      logger.debug(s"[$name] wait for spider done ...")
     }
   }
 
@@ -146,14 +147,14 @@ case class Spider(
     * @param request 等待执行的请求
     */
   def execute(request: Request): Unit = {
-    threadPool.execute(() => {
-      try {
-        /**
-          * 判断是否已经爬取过
-          */
-        if (scheduler.check(request)) {
+    /**
+      * 判断是否已经爬取过
+      */
+    if (scheduler.check(request)) {
+      threadPool.execute(() => {
+        try {
           val response = request.execute(this)
-
+          logger.info(s"[$name] crawler -> ${request.method}: ${request.url}")
           /**
             * 执行数据操作
             */
@@ -162,20 +163,20 @@ case class Spider(
               p.pipeForRequest(response).foreach(request => this.execute(request))
             } catch {
               case e: Exception =>
-                logger.error(s"pipe error, pipe: $p, request: ${request.url}", e)
+                logger.error(s"[$name] pipe error, pipe: $p, request: ${request.url}", e)
             }
           })
-        } else {
-          logger.debug(s"$request has bean spider !")
+        } catch {
+          case e: Exception =>
+            logger.error(s"[$name] request: ${request.url} error", e)
         }
-      } catch {
-        case e: Exception =>
-          logger.error(s"request: ${request.url} error", e)
-      }
-    })
+      })
+    } else {
+      logger.debug(s"[$name] $request has bean spider !")
+    }
   }
 }
 
 object Spider {
-  def apply(): Spider = new Spider()
+  def apply(name: String = ""): Spider = new Spider(name)
 }

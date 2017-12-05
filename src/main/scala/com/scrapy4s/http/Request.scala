@@ -61,8 +61,6 @@ case class Request(
   def execute(spider: Spider): Response = execute(spider.requestConfig)
 
   def execute(config: RequestConfig = RequestConfig.default): Response = {
-    logger.info(s"crawler -> ${this.method}: ${this.url}")
-
     var error_count = 0
     var proxyErrorCount = 0
     var proxy: Option[ProxyModel] = None
