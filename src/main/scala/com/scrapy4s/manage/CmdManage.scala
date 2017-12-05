@@ -36,13 +36,21 @@ case class CmdManage(
     this
   }
 
-  override def start(): Unit = {
+  lazy private val threadPool = {
     currentThreadPool match {
       case Some(tp) =>
-        spiders
-          .map(_.setThreadPool(tp))
+        tp
       case _ =>
+        new ThreadPoolExecutor(threadCount, threadCount,
+          0L, TimeUnit.MILLISECONDS,
+          new LinkedBlockingQueue[Runnable](),
+          new CallerRunsPolicy())
     }
+  }
+
+  override def start(): Unit = {
+    spiders
+      .map(_.setThreadPool(threadPool))
     proxyResource match {
       case Some(pr) =>
         spiders
