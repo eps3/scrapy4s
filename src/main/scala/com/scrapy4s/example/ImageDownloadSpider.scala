@@ -20,6 +20,6 @@ object ImageDownloadSpider {
           splitArr(splitArr.length - 1)
         })
       )
-      .start()
+      .run()
   }
 }

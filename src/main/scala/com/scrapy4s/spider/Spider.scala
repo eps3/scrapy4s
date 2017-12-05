@@ -118,9 +118,10 @@ class Spider(
   }
 
 
+  @Deprecated
   def start() = {
     run()
-    waitForShop()
+    waitForStop()
     this
   }
 
@@ -146,7 +147,9 @@ class Spider(
     this
   }
 
-  def waitForShop() = {
+
+  @Deprecated
+  def waitForStop() = {
     threadPool.shutdown()
     while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
       logger.debug(s"[$name] wait for spider done ...")

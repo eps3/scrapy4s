@@ -64,7 +64,7 @@ import com.scrapy4s.http.Response
 // 第一个参数是目标文件
 // 第二个参数是需要存的行数据解析函数
 val lineFilePipeline = LineFilePipeline("~/data/line.txt")(response => {
-  s"${response.url} ${response.statusCode}"
+  Some(s"${response.url} ${response.statusCode}")
 })
 ```
 

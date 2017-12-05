@@ -11,6 +11,7 @@ import com.scrapy4s.spider.Spider
   */
 case class CmdManage(
                       var spiders: Seq[Spider] = Seq.empty[Spider],
+                      var history: Option[Boolean] = None,
                       var threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
                       var currentThreadPool: Option[ThreadPoolExecutor] = None,
                       var proxyResource: Option[ProxyResource] = None
@@ -23,6 +24,11 @@ case class CmdManage(
 
   def setThreadPool(tp: ThreadPoolExecutor) = {
     this.currentThreadPool = Option(tp)
+    this
+  }
+
+  def setHistory(h: Boolean) = {
+    this.history = Option(h)
     this
   }
 
@@ -51,12 +57,20 @@ case class CmdManage(
   override def start(): Unit = {
     spiders
       .map(_.setThreadPool(threadPool))
+
+    history match {
+      case Some(h) =>
+        spiders.map(_.setHistory(h))
+      case _ =>
+    }
+
     proxyResource match {
       case Some(pr) =>
         spiders
           .map(_.setProxyResource(pr))
       case _ =>
     }
+
     spiders.foreach(_.run())
   }
 

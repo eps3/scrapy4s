@@ -28,6 +28,5 @@ object ExampleSpider {
       // 设置数据处理器
       .pipe(HtmlSavePipeline(FileUtil.pathWithHome(Seq("data", "spider", "example"))))
       .run()
-    spider.waitForShop()
   }
 }
