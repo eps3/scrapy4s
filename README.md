@@ -111,6 +111,8 @@ val fileDumpPipeline = FileDumpPipeline("~/data/")(response => {
   - ~~为Request添加xpath的封装~~
   - ~~添加代理支持~~
   - ~~添加更多的Pipeline支持~~
-  - 添加进度保存，重启恢复
+  - ~~添加进度保存，重启恢复~~
+  - 添加redis调度器
+  - 添加监控组件
 - v2: 添加异步io以及Akka调度机制
 - v3: 添加web监控管理器

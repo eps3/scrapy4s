@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory
   * 爬虫核心类，用于组装爬虫
   */
 class Spider(
-                   name: String,
+                   var name: String,
+                   var history: Boolean = false,
                    var threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
                    var requestConfig: RequestConfig = RequestConfig.default,
                    var startUrl: Seq[Request] = Seq.empty[Request],
@@ -43,6 +44,11 @@ class Spider(
 
   def setRequestConfig(rc: RequestConfig) = {
     this.requestConfig = rc
+    this
+  }
+
+  def setHistory(history: Boolean) = {
+    this.history = history
     this
   }
 
@@ -122,6 +128,9 @@ class Spider(
     * 初始化爬虫设置，并将初始url倒入任务池中
     */
   def run() = {
+    if (history) {
+      scheduler.load(this)
+    }
     startUrl.foreach(request => {
       execute(request)
     })
@@ -129,6 +138,9 @@ class Spider(
       pipelines.foreach(p => {
         p.close()
       })
+      if (history) {
+        scheduler.save(this)
+      }
       logger.info(s"[$name] spider done !")
     }))
     this
@@ -169,6 +181,10 @@ class Spider(
         } catch {
           case e: Exception =>
             logger.error(s"[$name] request: ${request.url} error", e)
+        }
+        if (history) {
+          // 保存成功信息
+          scheduler.ok(request)
         }
       })
     } else {

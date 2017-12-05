@@ -22,4 +22,8 @@ object FileUtil {
     Source.fromFile(filePath).getLines.toList
   }
 
+
+  def tempDir = {
+    System.getProperty("java.io.tmpdir")
+  }
 }

@@ -8,7 +8,7 @@ import com.scrapy4s.util.FileUtil
 
 object ExampleSpider {
   def main(args: Array[String]): Unit = {
-    val spider = Spider()
+    val spider = Spider("example")
       // 设置超时时间
       .setTimeOut(1000 * 5)
       // 设置线程数
@@ -21,6 +21,7 @@ object ExampleSpider {
       .setTryCount(3)
       // 设置起始Url
       .setStartUrl("https://www.v2ex.com")
+      .setHistory(true)
       .pipe(r => {
         r.xpath("""//span[@class="item_title"]/a/text()""").foreach(println)
       })
