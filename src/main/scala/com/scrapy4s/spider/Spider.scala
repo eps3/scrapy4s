@@ -7,6 +7,7 @@ import com.scrapy4s.http.proxy.ProxyResource
 import com.scrapy4s.http.{Request, RequestConfig, Response}
 import com.scrapy4s.pipeline.{MultiThreadPipeline, Pipeline, RequestPipeline}
 import com.scrapy4s.scheduler.{HashSetScheduler, Scheduler}
+import com.scrapy4s.thread.ThreadPool
 import org.slf4j.LoggerFactory
 
 
@@ -21,7 +22,7 @@ class Spider(
                    var startUrl: Seq[Request] = Seq.empty[Request],
                    var pipelines: Seq[Pipeline] = Seq.empty[Pipeline],
                    var scheduler: Scheduler = HashSetScheduler(),
-                   var currentThreadPool: Option[ThreadPoolExecutor] = None
+                   var currentThreadPool: Option[ThreadPool] = None
                  ) {
   val logger = LoggerFactory.getLogger(classOf[Spider])
 
@@ -30,14 +31,15 @@ class Spider(
       case Some(tp) =>
         tp
       case _ =>
-        new ThreadPoolExecutor(threadCount, threadCount,
-          0L, TimeUnit.MILLISECONDS,
+        new ThreadPool(
+          name,
+          threadCount,
           new LinkedBlockingQueue[Runnable](),
-          new CallerRunsPolicy())
+          )
     }
   }
 
-  def setThreadPool(tp: ThreadPoolExecutor) = {
+  def setThreadPool(tp: ThreadPool) = {
     this.currentThreadPool = Option(tp)
     this
   }
@@ -140,6 +142,8 @@ class Spider(
         p.close()
       })
       if (history) {
+        threadPool.shutdown()
+        threadPool.waitForStop()
         scheduler.save(this)
       }
       logger.info(s"[$name] spider done !")
@@ -151,9 +155,7 @@ class Spider(
   @Deprecated
   def waitForStop() = {
     threadPool.shutdown()
-    while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
-      logger.debug(s"[$name] wait for spider done ...")
-    }
+    threadPool.waitForStop()
   }
 
   /**

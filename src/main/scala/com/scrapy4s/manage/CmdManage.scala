@@ -1,10 +1,10 @@
 package com.scrapy4s.manage
 
-import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
-import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
+import java.util.concurrent.LinkedBlockingQueue
 
 import com.scrapy4s.http.proxy.ProxyResource
 import com.scrapy4s.spider.Spider
+import com.scrapy4s.thread.ThreadPool
 
 /**
   * 命令行管理器
@@ -13,7 +13,7 @@ case class CmdManage(
                       var spiders: Seq[Spider] = Seq.empty[Spider],
                       var history: Option[Boolean] = None,
                       var threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
-                      var currentThreadPool: Option[ThreadPoolExecutor] = None,
+                      var currentThreadPool: Option[ThreadPool] = None,
                       var proxyResource: Option[ProxyResource] = None
                     ) extends Manage {
 
@@ -22,7 +22,7 @@ case class CmdManage(
     this
   }
 
-  def setThreadPool(tp: ThreadPoolExecutor) = {
+  def setThreadPool(tp: ThreadPool) = {
     this.currentThreadPool = Option(tp)
     this
   }
@@ -47,10 +47,11 @@ case class CmdManage(
       case Some(tp) =>
         tp
       case _ =>
-        new ThreadPoolExecutor(threadCount, threadCount,
-          0L, TimeUnit.MILLISECONDS,
-          new LinkedBlockingQueue[Runnable](),
-          new CallerRunsPolicy())
+        new ThreadPool(
+          "cmdManage",
+          threadCount,
+          new LinkedBlockingQueue[Runnable]()
+        )
     }
   }
 
