@@ -171,7 +171,7 @@ class Spider(
       threadPool.execute(() => {
         try {
           val response = request.execute(this)
-          logger.info(s"[$name] crawler -> ${request.method}: ${request.url}")
+          logger.info(s"[$name] START -> ${request.method}: ${request.url}")
           /**
             * 执行数据操作
             */
@@ -183,6 +183,7 @@ class Spider(
                 logger.error(s"[$name] pipe error, pipe: $p, request: ${request.url}", e)
             }
           })
+          logger.info(s"[$name] SUCCESS ${request.method}: ${request.url}")
         } catch {
           case e: Exception =>
             logger.error(s"[$name] request: ${request.url} error", e)

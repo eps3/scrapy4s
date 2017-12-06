@@ -11,3 +11,4 @@ libraryDependencies += "org.asynchttpclient" % "async-http-client" % "2.0.37"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % Test
 libraryDependencies += "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.21"
 libraryDependencies += "com.alibaba" % "fastjson" % "1.2.35"
+libraryDependencies += "redis.clients" % "jedis" % "2.9.0"

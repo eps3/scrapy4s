@@ -25,6 +25,7 @@ class RestProxyResource(
     */
   private def acquireProxy(): Unit = {
     try {
+      logger.info(s"Refresh proxy with $url")
       paser(Request(url).execute()).foreach { proxy =>
         threadLocalProxyStack.get().push(proxy)
       }

@@ -89,8 +89,13 @@ case class Request(
             .setFollowRedirect(true)
           // 设置代理
           (if (proxy.isDefined) {
+            logger.debug(s"crawler -> ${this.method}: ${this.url} , with proxy: ${proxy.get.ip}:${proxy.get.port}")
             req.setProxyServer(new ProxyServer.Builder(proxy.get.ip, proxy.get.port))
-          } else req).build()
+          } else {
+            logger.debug(s"crawler -> ${this.method}: ${this.url}")
+            req
+          }
+            ).build()
         }.execute().get()
         val _res = Response(this, response)
         // 判断是否成功
