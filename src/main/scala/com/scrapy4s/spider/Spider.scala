@@ -132,6 +132,9 @@ class Spider(
     */
   def run() = {
     if (history) {
+      if (name == null || name.isEmpty) {
+        throw new Exception("spider name could not be empty when history is true")
+      }
       scheduler.load(this)
     }
     startUrl.foreach(request => {
