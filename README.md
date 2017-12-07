@@ -1,5 +1,7 @@
 ### scrapy4s
 
+[![](https://jitpack.io/v/sheepmen/scrapy4s.svg)](https://jitpack.io/#sheepmen/scrapy4s)
+
 >  易用的scala爬虫框架
 
 
@@ -13,8 +15,19 @@
 - 进度保存，断点续爬
 
 
-
 #### 2. 使用
+
+##### 2.1 build.sbt添加依赖
+
+```
+resolvers += "jitpack" at "https://jitpack.io"
+
+libraryDependencies += "com.github.sheepmen" % "scrapy4s" % "0.0.3"	
+```
+
+
+
+##### 2.2 code
 
 ```scala
 import com.scrapy4s.pipeline.HtmlSavePipeline
