@@ -21,6 +21,7 @@ object ExampleSpider {
       .setTryCount(3)
       // 设置起始Url
       .setStartUrl("https://www.v2ex.com")
+      // 设置保存进度
       .setHistory(true)
       .pipe(r => {
         r.xpath("""//span[@class="item_title"]/a/text()""").foreach(println)
