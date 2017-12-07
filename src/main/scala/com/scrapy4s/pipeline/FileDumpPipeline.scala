@@ -8,7 +8,10 @@ import org.slf4j.LoggerFactory
 
 
 /**
-  * Created by sheep3 on 2017/11/30.
+  * 文件下载Pipeline
+  *
+  * @param fileDir 目标文件夹
+  * @param fileNamePaser 文件名解析方法，建议不同页面的返回值不一致，否则会出现文件覆盖的情况
   */
 class FileDumpPipeline(fileDir: String, fileNamePaser: Response => String) extends Pipeline {
   val logger = LoggerFactory.getLogger(classOf[FileDumpPipeline])
@@ -26,9 +29,15 @@ class FileDumpPipeline(fileDir: String, fileNamePaser: Response => String) exten
 }
 
 object FileDumpPipeline {
+  /**
+    * 文件下载Pipeline
+    *
+    * @param fileDir 目标文件夹
+    * @param fileNamePaser 文件名解析方法，建议不同页面的返回值不一致，否则会出现文件覆盖的情况
+    * @return
+    */
   def apply(fileDir: String)
-           (implicit p: Response => String = r => HashUtil.getHash(r.request.toString)): FileDumpPipeline = {
-    new FileDumpPipeline(fileDir, p)
+           (implicit fileNamePaser: Response => String = r => HashUtil.getHash(r.request.toString)): FileDumpPipeline = {
+    new FileDumpPipeline(fileDir, fileNamePaser)
   }
-
 }

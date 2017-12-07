@@ -4,7 +4,7 @@ import java.util.concurrent.LinkedBlockingQueue
 
 import com.scrapy4s.http.proxy.ProxyResource
 import com.scrapy4s.spider.Spider
-import com.scrapy4s.thread.ThreadPool
+import com.scrapy4s.thread.{DefaultThreadPool, ThreadPool}
 
 /**
   * 命令行管理器
@@ -22,7 +22,7 @@ case class CmdManage(
     this
   }
 
-  def setThreadPool(tp: ThreadPool) = {
+  def setThreadPool(tp: DefaultThreadPool) = {
     this.currentThreadPool = Option(tp)
     this
   }
@@ -47,7 +47,7 @@ case class CmdManage(
       case Some(tp) =>
         tp
       case _ =>
-        new ThreadPool(
+        new DefaultThreadPool(
           "cmdManage",
           threadCount,
           new LinkedBlockingQueue[Runnable]()

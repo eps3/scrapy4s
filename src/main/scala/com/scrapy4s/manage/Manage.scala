@@ -5,6 +5,9 @@ package com.scrapy4s.manage
   */
 trait Manage {
 
+  /**
+    * 启动管理器
+    */
   def start()
 
 }

@@ -7,7 +7,7 @@ import com.scrapy4s.http.proxy.ProxyResource
 import com.scrapy4s.http.{Request, RequestConfig, Response}
 import com.scrapy4s.pipeline.{MultiThreadPipeline, Pipeline, RequestPipeline}
 import com.scrapy4s.scheduler.{HashSetScheduler, Scheduler}
-import com.scrapy4s.thread.ThreadPool
+import com.scrapy4s.thread.{DefaultThreadPool, ThreadPool}
 import org.slf4j.LoggerFactory
 
 
@@ -31,7 +31,7 @@ class Spider(
       case Some(tp) =>
         tp
       case _ =>
-        new ThreadPool(
+        new DefaultThreadPool(
           name,
           threadCount,
           new LinkedBlockingQueue[Runnable](),
