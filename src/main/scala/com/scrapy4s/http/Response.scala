@@ -16,6 +16,8 @@ case class Response(
                    ) {
   def body: String = _response.getResponseBody
 
+  def body(charSet: String): String = new String(_response.getResponseBodyAsBytes, charSet)
+
   def url: String = _response.getUri.toUrl
 
   def method: String = request.method
