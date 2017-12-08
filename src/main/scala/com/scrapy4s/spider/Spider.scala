@@ -119,18 +119,10 @@ class Spider(
     this
   }
 
-
-  @Deprecated
-  def start() = {
-    run()
-    waitForStop()
-    this
-  }
-
   /**
     * 初始化爬虫设置，并将初始url倒入任务池中
     */
-  def run() = {
+  def start() = {
     if (history) {
       if (name == null || name.isEmpty) {
         throw new Exception("spider name could not be empty when history is true")
@@ -154,12 +146,6 @@ class Spider(
     this
   }
 
-
-  @Deprecated
-  def waitForStop() = {
-    threadPool.shutdown()
-    threadPool.waitForStop()
-  }
 
   /**
     * 提交请求任务到线程池

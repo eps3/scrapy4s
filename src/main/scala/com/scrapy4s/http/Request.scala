@@ -12,11 +12,21 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
+/**
+  * 请求体封装
+  *
+  * @param url 目标Url
+  * @param method 请求方法
+  * @param data 请求数据
+  * @param header 请求的header
+  * @param json 请求json数据
+  */
 case class Request(
                     url: String,
                     method: String = Method.GET,
                     data: Map[String, Seq[String]] = Map.empty,
-                    header: Map[String, Seq[String]] = Map.empty
+                    header: Map[String, Seq[String]] = Map.empty,
+                    json: Map[String, Object] = Map.empty,
                   ) {
   val logger = LoggerFactory.getLogger(classOf[Request])
 
@@ -49,7 +59,8 @@ case class Request(
       url = url,
       method = method,
       data = data,
-      header = header + (key -> Seq(value))
+      header = header + (key -> Seq(value)),
+      json = json
     )
   }
 

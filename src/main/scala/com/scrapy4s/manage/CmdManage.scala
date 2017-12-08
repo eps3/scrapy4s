@@ -72,7 +72,7 @@ case class CmdManage(
       case _ =>
     }
 
-    spiders.foreach(_.run())
+    spiders.foreach(_.start())
   }
 
 }
