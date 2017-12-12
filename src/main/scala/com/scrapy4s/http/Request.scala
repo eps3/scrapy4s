@@ -15,18 +15,18 @@ import scala.collection.JavaConverters._
 /**
   * 请求体封装
   *
-  * @param url 目标Url
+  * @param url    目标Url
   * @param method 请求方法
-  * @param data 请求数据
+  * @param data   请求数据
   * @param header 请求的header
-  * @param json 请求json数据
+  * @param json   请求json数据
   */
 case class Request(
-                    url: String,
-                    method: String = Method.GET,
-                    data: Map[String, Seq[String]] = Map.empty,
-                    header: Map[String, Seq[String]] = Map.empty,
-                    json: Map[String, Object] = Map.empty,
+                    var url: String,
+                    var method: String = Method.GET,
+                    var data: Map[String, Seq[String]] = Map.empty,
+                    var header: Map[String, Seq[String]] = Map.empty,
+                    var json: Option[String] = None,
                   ) {
   val logger = LoggerFactory.getLogger(classOf[Request])
 
@@ -46,22 +46,39 @@ case class Request(
     }
   }
 
-  def headerAsJava = {
+  def setJson(newJson: String) = {
+    json = Option(newJson)
+    setHeader("Content-type", "application/json")
+    this
+  }
+
+
+  def setHeader(key: String, value: String) = {
+    header = header + (key -> Seq(value))
+    this
+  }
+
+  private def headerAsJava = {
     header.map(m => m._1 -> m._2.asJava).asJava
   }
 
-  def dataAsJava = {
+  private def dataAsJava = {
     data.map(m => m._1 -> m._2.asJava).asJava
   }
 
-  def withHeader(key: String, value: String) = {
-    Request(
-      url = url,
-      method = method,
-      data = data,
-      header = header + (key -> Seq(value)),
-      json = json
-    )
+  def httpClient = {
+    val req = request(this.method, this.url)
+      .setFormParams(this.dataAsJava)
+      .setHeaders(this.headerAsJava)
+      .setHeader("User-Agent", HttpUtil.randomUserAgent)
+      .setMethod(this.method)
+      .setFollowRedirect(true)
+    json match {
+      case Some(j) =>
+        req.setBody(j)
+      case _ =>
+        req
+    }
   }
 
   /**
@@ -91,13 +108,7 @@ case class Request(
           }
         }
         val response: asynchttpclient.Response = client.prepareRequest {
-          val req = request(this.method, this.url)
-            .setFormParams(this.dataAsJava)
-            .setHeaders(this.headerAsJava)
-            .setHeader("User-Agent", HttpUtil.randomUserAgent)
-            .setRequestTimeout(config.timeOut)
-            .setMethod(this.method)
-            .setFollowRedirect(true)
+          val req = httpClient.setRequestTimeout(config.timeOut)
           // 设置代理
           (if (proxy.isDefined) {
             logger.debug(s"crawler -> ${this.method}: ${this.url} , with proxy: ${proxy.get.ip}:${proxy.get.port}")

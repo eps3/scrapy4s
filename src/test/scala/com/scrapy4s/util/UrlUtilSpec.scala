@@ -7,7 +7,7 @@ import org.scalatest.FunSuite
   */
 class UrlUtilSpec  extends FunSuite{
   test("url util test") {
-    val url = UrlUtil.getRealUrl("xiaoqu/xicheng/", "https://bj.lianjia.com/xiaoqu/dongcheng/")
+    val url = UrlUtil.getRealUrl("/xiaoqu/xicheng/", "https://bj.lianjia.com/xiaoqu/dongcheng/")
     println(url)
     assert("https://bj.lianjia.com/xiaoqu/xicheng/".equals(url))
 

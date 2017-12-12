@@ -6,13 +6,17 @@ import org.scalatest.FunSuite
   * Created by sheep3 on 2017/11/30.
   */
 class RequestSpec extends FunSuite {
-  test("request content") {
-    val _match = Request(s"http://esf.fang.com/newsecond/map/NewMapDetail.aspx?newcode=1010111145&isrent=Y&width=678&height=355")
-      .withHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36")
+  test("request post json") {
+    val res = Request("https://m.dianping.com/isoapi/module")
+      .setJson("""{"pageEnName":"shopList","moduleInfoList":[{"moduleName":"mapiSearch","query":{"search":{"start":20,"categoryid":"10","parentCategoryId":10,"locatecityid":2,"limit":20,"sortid":"0","cityid":3,"range":"1","maptype":0,"mylat":39.975471399999996,"mylng":116.4894769},"loaders":["list"]}}]}""")
       .execute()
-      .regex("""px:"(.*?)",py:"(.*?)"""".r)
-      .head
-    println(_match)
-    assert("116.395645".equals(_match(0)))
+//    println(res.body)
+    assert(res.statusCode == 200)
+  }
+
+  test("request get") {
+    val res = Request("http://tool.oschina.net/codeformat/json").execute()
+    println(res.xpath("""//title/text()""").headOption.getOrElse(""))
+    assert(res.statusCode == 200)
   }
 }
