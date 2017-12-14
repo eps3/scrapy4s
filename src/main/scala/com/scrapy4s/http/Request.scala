@@ -119,7 +119,7 @@ case class Request(
           }
             ).build()
         }.execute().get()
-        val _res = Response(this, response)
+        val _res = packageResponse(response)
         // 判断是否成功
         if (config.test_func(_res)) {
           if (proxy.isDefined) {
@@ -143,5 +143,9 @@ case class Request(
       }
     }
     throw new Exception("unknown exception")
+  }
+
+  def packageResponse(response: asynchttpclient.Response): Response = {
+    Response(this, response)
   }
 }

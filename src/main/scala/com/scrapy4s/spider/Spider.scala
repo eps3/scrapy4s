@@ -94,6 +94,7 @@ class Spider(
     * @param pipeline 添加新的数据管道
     * @return
     */
+  @unchecked
   def pipe(pipeline: Pipeline): Spider = {
     this.pipelines = pipelines :+ pipeline
     this
