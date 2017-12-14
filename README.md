@@ -1,6 +1,7 @@
 ### scrapy4s
 
 [![](https://jitpack.io/v/sheepmen/scrapy4s.svg)](https://jitpack.io/#sheepmen/scrapy4s)
+[![Build Status](https://travis-ci.org/sheepmen/scrapy4s.svg?branch=master)](https://travis-ci.org/sheepmen/scrapy4s)
 
 >  易用的scala爬虫框架
 
@@ -58,7 +59,7 @@ object ExampleSpider {
       })
       // 设置数据处理器
       .pipe(HtmlSavePipeline(FileUtil.pathWithHome(Seq("data", "spider", "example"))))
-      .run()
+      .start()
   }
 }
 ```
