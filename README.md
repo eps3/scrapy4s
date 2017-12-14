@@ -150,7 +150,9 @@ CmdManage()
 
 
 #### Update Log
-
+- 2017-12-14
+  - 添加了RequestWithData请求类，使请求包含数据传递
+  - 添加post json易用API 
 - 2017-12-01
   - 简化了pipeline模型，为多线程pipe提供了fork方法
   - 添加了pipeForRequest方法，为爬虫的继续添加驱动
