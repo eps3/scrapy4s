@@ -15,6 +15,9 @@ class UrlUtilSpec  extends FunSuite{
     println(url2)
     assert("https://bj.lianjia.com/xiaoqu/dongcheng/xiaoqu/xicheng/".equals(url2))
 
+    val url3 = UrlUtil.getRealUrl("//www.ziroom.com/z/nl/z3-d23008614.html", "http://www.ziroom.com/z/nl/z3.html")
+    println(url3)
+    assert("http://www.ziroom.com/z/nl/z3-d23008614.html".equals(url3))
   }
 
 }
