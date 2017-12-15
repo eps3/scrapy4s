@@ -35,7 +35,8 @@ case class Request(
       case _obj: Request =>
         if (
           _obj.method.equals(this.method) ||
-            _obj.url.equals(this.url)
+            _obj.url.equals(this.url) ||
+            _obj.json.equals(this.json)
         ) {
           true
         } else {

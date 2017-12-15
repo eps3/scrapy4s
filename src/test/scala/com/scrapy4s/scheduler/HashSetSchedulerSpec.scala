@@ -9,6 +9,9 @@ class HashSetSchedulerSpec extends FunSuite{
     val scheduler = HashSetScheduler()
     scheduler.check(Request("http://www.scalatest.org/user_guide/selecting_a_style"))
     assert(!scheduler.check(Request("http://www.scalatest.org/user_guide/selecting_a_style")))
+
+    scheduler.check(Request("a").setJson("111"))
+    assert(scheduler.check(Request("a").setJson("222")))
   }
 
 
