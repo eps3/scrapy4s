@@ -1,7 +1,6 @@
 package com.scrapy4s.spider
 
-import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
-import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
+import java.util.concurrent.LinkedBlockingQueue
 
 import com.scrapy4s.http.proxy.ProxyResource
 import com.scrapy4s.http.{Request, RequestConfig, Response}
