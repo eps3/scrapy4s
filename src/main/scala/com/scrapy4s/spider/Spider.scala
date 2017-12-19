@@ -4,6 +4,7 @@ import java.util.concurrent.LinkedBlockingQueue
 
 import com.scrapy4s.http.proxy.ProxyResource
 import com.scrapy4s.http.{Request, RequestConfig, Response}
+import com.scrapy4s.monitor.Monitor
 import com.scrapy4s.pipeline.{MultiThreadPipeline, Pipeline, RequestPipeline}
 import com.scrapy4s.scheduler.{HashSetScheduler, Scheduler}
 import com.scrapy4s.thread.{DefaultThreadPool, ThreadPool}
@@ -20,6 +21,7 @@ class Spider(
                    var requestConfig: RequestConfig = RequestConfig.default,
                    var startUrl: Seq[Request] = Seq.empty[Request],
                    var pipelines: Seq[Pipeline] = Seq.empty[Pipeline],
+                   var monitors: Seq[Monitor] = Seq.empty[Monitor],
                    var scheduler: Scheduler = HashSetScheduler(),
                    var currentThreadPool: Option[ThreadPool] = None
                  ) {
@@ -84,6 +86,17 @@ class Spider(
 
   def setThreadCount(count: Int) = {
     this.threadCount = count
+    this
+  }
+
+
+  /**
+    * 设置监控
+    * @param monitor 添加的监控
+    * @return
+    */
+  def setMonitor(monitor: Monitor): Spider = {
+    this.monitors = monitors :+ monitor
     this
   }
 
@@ -153,12 +166,22 @@ class Spider(
     * @param request 等待执行的请求
     */
   def execute(request: Request): Unit = {
+    // TODO: 这些hook需要单独抽出来
     /**
       * 判断是否已经爬取过
       */
     if (scheduler.check(request)) {
+      /**
+        * 监控投入任务的hook
+        */
+      monitors.foreach(_.requestPutHook())
+
       threadPool.execute(() => {
         try {
+          /**
+            * 开始抓取的hook
+            */
+          monitors.foreach(_.requestStartHook())
           val response = request.execute(this)
           logger.info(s"[$name] START -> ${request.method}: ${request.url}")
           /**
@@ -172,9 +195,19 @@ class Spider(
                 logger.error(s"[$name] pipe error, pipe: $p, request: ${request.url}", e)
             }
           })
+
+          /**
+            * 成功抓取的hook
+            */
+          monitors.foreach(_.requestSuccessHook())
           logger.info(s"[$name] SUCCESS ${request.method}: ${request.url}")
         } catch {
           case e: Exception =>
+
+            /**
+              * 抓取失败的hook
+              */
+            monitors.foreach(_.requestErrorHook())
             logger.error(s"[$name] request: ${request.url} error", e)
         }
         if (history) {
