@@ -15,16 +15,16 @@ import org.slf4j.LoggerFactory
   * 爬虫核心类，用于组装爬虫
   */
 class Spider(
-                   var name: String,
-                   var history: Boolean = false,
-                   var threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
-                   var requestConfig: RequestConfig = RequestConfig.default,
-                   var startUrl: Seq[Request] = Seq.empty[Request],
-                   var pipelines: Seq[Pipeline] = Seq.empty[Pipeline],
-                   var monitors: Seq[Monitor] = Seq.empty[Monitor],
-                   var scheduler: Scheduler = HashSetScheduler(),
-                   var currentThreadPool: Option[ThreadPool] = None
-                 ) {
+              var name: String,
+              var history: Boolean = false,
+              var threadCount: Int = Runtime.getRuntime.availableProcessors() * 2,
+              var requestConfig: RequestConfig = RequestConfig.default,
+              var startUrl: Seq[Request] = Seq.empty[Request],
+              var pipelines: Seq[Pipeline] = Seq.empty[Pipeline],
+              var monitors: Seq[Monitor] = Seq.empty[Monitor],
+              var scheduler: Scheduler = HashSetScheduler(),
+              var currentThreadPool: Option[ThreadPool] = None
+            ) {
   val logger = LoggerFactory.getLogger(classOf[Spider])
 
   lazy private val threadPool = {
@@ -36,7 +36,7 @@ class Spider(
           name,
           threadCount,
           new LinkedBlockingQueue[Runnable](),
-          )
+        )
     }
   }
 
@@ -92,6 +92,7 @@ class Spider(
 
   /**
     * 设置监控
+    *
     * @param monitor 添加的监控
     * @return
     */
@@ -174,16 +175,17 @@ class Spider(
       /**
         * 监控投入任务的hook
         */
-      monitors.foreach(_.requestPutHook())
+      monitors.foreach(_.requestPutHook(this))
 
       threadPool.execute(() => {
         try {
           /**
             * 开始抓取的hook
             */
-          monitors.foreach(_.requestStartHook())
+          monitors.foreach(_.requestStartHook(this))
           val response = request.execute(this)
           logger.info(s"[$name] START -> ${request.method}: ${request.url}")
+
           /**
             * 执行数据操作
             */
@@ -199,7 +201,7 @@ class Spider(
           /**
             * 成功抓取的hook
             */
-          monitors.foreach(_.requestSuccessHook())
+          monitors.foreach(_.requestSuccessHook(this))
           logger.info(s"[$name] SUCCESS ${request.method}: ${request.url}")
         } catch {
           case e: Exception =>
@@ -207,13 +209,18 @@ class Spider(
             /**
               * 抓取失败的hook
               */
-            monitors.foreach(_.requestErrorHook())
+            monitors.foreach(_.requestErrorHook(this))
             logger.error(s"[$name] request: ${request.url} error", e)
         }
         if (history) {
           // 保存成功信息
           scheduler.ok(request)
         }
+
+        /**
+          * 抓取结束的hook
+          */
+        monitors.foreach(_.requestEndHook(this))
       })
     } else {
       logger.debug(s"[$name] $request has bean spider !")

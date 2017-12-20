@@ -2,12 +2,13 @@ package com.scrapy4s.monitor
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.scrapy4s.spider.Spider
 import org.slf4j.LoggerFactory
 
 /**
   * Created by sheep3 on 2017/12/19.
   */
-class CountLogMonitor(name: String) extends Monitor {
+class CountLogMonitor extends Monitor {
   val logger = LoggerFactory.getLogger(classOf[CountLogMonitor])
   val successCount = new AtomicInteger()
 
@@ -20,39 +21,40 @@ class CountLogMonitor(name: String) extends Monitor {
   /**
     * 爬取成功
     */
-  def requestSuccessHook() = {
+  override def requestSuccessHook(spider: Spider) = {
     successCount.incrementAndGet()
-    startCount.decrementAndGet()
   }
 
   /**
     * 爬取失败
     */
-  def requestErrorHook() = {
+  override def requestErrorHook(spider: Spider) = {
     errorCount.incrementAndGet()
-    startCount.decrementAndGet()
   }
 
   /**
     * 开始请求
     */
-  def requestStartHook() = {
+  override def requestStartHook(spider: Spider) = {
     startCount.incrementAndGet()
-    printLog()
   }
 
 
   /**
     * 加入队列
     */
-  def requestPutHook() = {
+  override def requestPutHook(spider: Spider) = {
     allCount.incrementAndGet()
   }
 
+  override def requestEndHook(spider: Spider): Unit = {
+    startCount.decrementAndGet()
+    printLog(spider)
+  }
 
-  def printLog() = logger.info(s"[monitor-$name] 所有任务: ${allCount.get()}, 完成: ${successCount.get()}, 失败: ${errorCount.get()}, 正在执行: ${startCount.get()}")
+  def printLog(spider: Spider) = logger.info(s"[monitor-${spider.name}] 所有任务: ${allCount.get()}, 完成: ${successCount.get()}, 失败: ${errorCount.get()}, 正在执行: ${startCount.get()}")
 }
 
 object CountLogMonitor {
-  def apply(name: String): CountLogMonitor = new CountLogMonitor(name)
+  def apply(): CountLogMonitor = new CountLogMonitor()
 }

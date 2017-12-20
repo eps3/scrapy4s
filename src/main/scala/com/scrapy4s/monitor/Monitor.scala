@@ -1,16 +1,20 @@
 package com.scrapy4s.monitor
 
+import com.scrapy4s.spider.Spider
+
 /**
   * 监控接口
   */
 trait Monitor {
 
-  def requestSuccessHook()
+  def requestSuccessHook(spider: Spider)
 
-  def requestErrorHook()
+  def requestErrorHook(spider: Spider)
 
-  def requestStartHook()
+  def requestStartHook(spider: Spider)
 
-  def requestPutHook()
+  def requestEndHook(spider: Spider)
+
+  def requestPutHook(spider: Spider)
 
 }
