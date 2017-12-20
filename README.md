@@ -23,7 +23,7 @@
 ```
 resolvers += "jitpack" at "https://jitpack.io"
 
-libraryDependencies += "com.github.sheepmen" % "scrapy4s" % "0.0.3"	
+libraryDependencies += "com.github.sheepmen" % "scrapy4s" % "0.0.4"	
 ```
 
 
@@ -32,7 +32,9 @@ libraryDependencies += "com.github.sheepmen" % "scrapy4s" % "0.0.3"
 
 ```scala
 import com.scrapy4s.pipeline.HtmlSavePipeline
+import com.scrapy4s.pipeline.MultiLinePipeline
 import com.scrapy4s.scheduler.HashSetScheduler
+import com.scrapy4s.monitor.CountLogMonitor
 import com.scrapy4s.spider.Spider
 import com.scrapy4s.util.FileUtil
 
@@ -54,11 +56,14 @@ object ExampleSpider {
       .setStartUrl("https://www.v2ex.com")
       // 设置保存进度
       .setHistory(true)
-      .pipe(r => {
-        r.xpath("""//span[@class="item_title"]/a/text()""").foreach(println)
-      })
+      // 设置进度监控
+      .setMonitor(CountLogMonitor())
+      // 设置解析器，存入/Users/admin/data/tmp/v2ex.txt
+      .pipe(MultiLinePipeline("/Users/admin/data/tmp/v2ex.txt")(r => {
+        r.xpath("""//span[@class='item_title']/a/text()""")
+      }))
       // 设置数据处理器
-      .pipe(HtmlSavePipeline(FileUtil.pathWithHome(Seq("data", "spider", "example"))))
+      .pipe(HtmlSavePipeline("/Users/admin/data/tmp/"))
       .start()
   }
 }
@@ -150,6 +155,8 @@ CmdManage()
 
 
 #### Update Log
+- 2017-12-19
+  - 添加了监控接口Monitor，及其实现类CountLogMonitor
 - 2017-12-14
   - 添加了RequestWithData请求类，使请求包含数据传递
   - 添加post json易用API 
