@@ -47,8 +47,23 @@ case class Request(
     }
   }
 
+  def print: String = {
+    var str = s"$method: $url"
+    if (data.nonEmpty) {
+      str += ", data: " + data.map(m => {
+        s"${m._1}=${m._2.mkString(",")}"
+      }).mkString(";")
+    }
+
+    if (json.nonEmpty) {
+      str += s", json: ${json.get}"
+    }
+    str
+  }
+
   def setJson(newJson: String) = {
     json = Option(newJson)
+    method = Method.POST
     setHeader("Content-type", "application/json")
     this
   }

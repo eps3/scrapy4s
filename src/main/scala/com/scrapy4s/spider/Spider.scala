@@ -184,7 +184,7 @@ class Spider(
             */
           monitors.foreach(_.requestStartHook(this))
           val response = request.execute(this)
-          logger.info(s"[$name] START -> ${request.method}: ${request.url}")
+          logger.info(s"[$name] START -> ${request.print}")
 
           /**
             * 执行数据操作
@@ -194,7 +194,7 @@ class Spider(
               p.pipeForRequest(response).foreach(request => this.execute(request))
             } catch {
               case e: Exception =>
-                logger.error(s"[$name] pipe error, pipe: $p, request: ${request.url}", e)
+                logger.error(s"[$name] pipe error, pipe: $p, request: ${request.print}", e)
             }
           })
 
@@ -202,7 +202,7 @@ class Spider(
             * 成功抓取的hook
             */
           monitors.foreach(_.requestSuccessHook(this))
-          logger.info(s"[$name] SUCCESS ${request.method}: ${request.url}")
+          logger.info(s"[$name] SUCCESS -> ${request.print}")
         } catch {
           case e: Exception =>
 
@@ -210,7 +210,7 @@ class Spider(
               * 抓取失败的hook
               */
             monitors.foreach(_.requestErrorHook(this))
-            logger.error(s"[$name] request: ${request.url} error", e)
+            logger.error(s"[$name] ERROR -> request: ${request.print}", e)
         }
         if (history) {
           // 保存成功信息
@@ -223,7 +223,7 @@ class Spider(
         monitors.foreach(_.requestEndHook(this))
       })
     } else {
-      logger.debug(s"[$name] $request has bean spider !")
+      logger.debug(s"[$name] ${request.print} has bean spider !")
     }
   }
 }
