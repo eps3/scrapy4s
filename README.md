@@ -69,9 +69,9 @@ object ExampleSpider {
 }
 ```
 
-##### 2.1 例子
-
- - [com.scrapy4s.example.MeiziSpider](./src/main/scala/com/scrapy4s/example/MeiziSpider.scala) 妹子图爬虫
+##### 2.1 更多例子
+- [scrapy4s示例项目](https://github.com/sheepmen/scrapy4s_demo)
+  - [妹子图爬虫](https://github.com/sheepmen/scrapy4s_demo/blob/master/src/main/scala/MeiziSpider.scala)
 
 
 
