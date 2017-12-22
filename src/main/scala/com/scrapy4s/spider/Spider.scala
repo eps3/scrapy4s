@@ -182,9 +182,9 @@ class Spider(
           /**
             * 开始抓取的hook
             */
+          logger.info(s"[$name] START -> ${request.print}")
           monitors.foreach(_.requestStartHook(this))
           val response = request.execute(this)
-          logger.info(s"[$name] START -> ${request.print}")
 
           /**
             * 执行数据操作
