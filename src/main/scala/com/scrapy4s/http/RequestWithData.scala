@@ -14,12 +14,10 @@ object RequestWithData {
   def apply[T](url: String, data: T): RequestWithData[T] = new RequestWithData(url, data)
 
   def main(args: Array[String]): Unit = {
-    val testSpider = Spider("test").pipe{
+    val testSpider = Spider("test").pipeMatch{
       case r: ResponseWithData[_] =>
         println("get message hello")
         assert(r.message.equals("hello"))
-      case _ =>
-        println("奇怪的路由")
     }.setStartRequest(RequestWithData("http://tool.oschina.net/codeformat/json","hello"))
     testSpider.start()
   }

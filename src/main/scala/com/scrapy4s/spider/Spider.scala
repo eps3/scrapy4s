@@ -106,9 +106,15 @@ class Spider(
     * @param pipeline 添加新的数据管道
     * @return
     */
-  @unchecked
   def pipe(pipeline: Pipeline): Spider = {
     this.pipelines = pipelines :+ pipeline
+    this
+  }
+
+  def pipeMatch(pf: PartialFunction[Response, Unit]): Spider = {
+    this.pipelines = pipelines :+ new Pipeline {
+      override def pipe(response: Response): Unit = pf(response)
+    }
     this
   }
 
