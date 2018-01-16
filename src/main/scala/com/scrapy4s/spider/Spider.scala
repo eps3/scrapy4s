@@ -118,6 +118,11 @@ class Spider(
     this
   }
 
+  def pipeMatchForRequest(pf: PartialFunction[Response, Seq[Request]]): Spider = {
+    this.pipelines = pipelines :+ new RequestPipeline(r => pf(r))
+    this
+  }
+
   def pipeForRequest(request: Response => Seq[Request]): Spider = {
     pipe(RequestPipeline(request))
   }
