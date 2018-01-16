@@ -20,7 +20,7 @@ object RequestWithData {
         assert(r.message.equals("hello"))
       case _ =>
         println("奇怪的路由")
-    }.setStartUrl(RequestWithData("http://tool.oschina.net/codeformat/json","hello"))
+    }.setStartRequest(RequestWithData("http://tool.oschina.net/codeformat/json","hello"))
     testSpider.start()
   }
 }

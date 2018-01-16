@@ -71,17 +71,16 @@ class Spider(
     setRequestConfig(requestConfig.withProxyResource(proxyResource))
   }
 
-  def setStartUrl(urls: Seq[Request]): Spider = {
+
+  def setStartRequest(urls: Request *): Spider = {
     this.startUrl = startUrl ++ urls
     this
   }
 
-  def setStartUrl(url: Request): Spider = {
-    setStartUrl(Seq(url))
-  }
 
-  def setStartUrl(url: String): Spider = {
-    setStartUrl(Request(url))
+  def setStartUrl(urls: String *): Spider = {
+    this.startUrl = startUrl ++ urls.map(u => Request(u))
+    this
   }
 
   def setThreadCount(count: Int) = {
