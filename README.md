@@ -2,10 +2,9 @@
 
 [![](https://jitpack.io/v/sheepmen/scrapy4s.svg)](https://jitpack.io/#sheepmen/scrapy4s)
 [![Build Status](https://travis-ci.org/sheepmen/scrapy4s.svg?branch=master)](https://travis-ci.org/sheepmen/scrapy4s)
+![](https://img.shields.io/badge/scala-2.12-brightgreen.svg)
 
 >  易用的scala爬虫框架
-
-
 
 #### 1. 功能
 
@@ -23,7 +22,7 @@
 ```
 resolvers += "jitpack" at "https://jitpack.io"
 
-libraryDependencies += "com.github.sheepmen" % "scrapy4s" % "0.0.5"	
+libraryDependencies += "com.github.weidian-ai" % "scrapy4s" % "0.0.5"
 ```
 
 
